@@ -1,0 +1,16 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"path": "github.com/hashicorp/go-cleanhttp",
+			"revision": "ce617e79981a8fff618bb643d155133a8f38db96",
+			"revisionTime": "2015-12-17T15:04:12-05:00"
+		},
+		{
+			"path": "github.com/pearkes/dnsimple",
+			"revision": "78996265f576c7580ff75d0cb2c606a61883ceb8",
+			"revisionTime": "2015-10-22T14:22:09-04:00"
+		}
+	]
+}
