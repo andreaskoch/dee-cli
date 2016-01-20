@@ -65,6 +65,29 @@ dnsimple-cli uses the following third-party libraries:
 - [github.com/mitchellh/go-homedir](https://github.com/mitchellh/go-homedir) for determining the user's home directory path
 - [github.com/spf13/afero](https://github.com/spf13/afero) as a filesystem abstraction for testing
 
+## Installation & Build
+
+Compile the dnsimple-cli binary for your current platform:
+
+```bash
+git clone git@github.com:andreaskoch/dnsimple-cli.git && cd dnsimple-cli
+
+go run make.go -install
+```
+
+Compile the dnsimple-cli binaries for Linux (64bit, ARM, ARM5, ARM6, ARM7), Mac OS (64bit) and Windows (64bit):
+
+```bash
+go run make.go -crosscompile
+```
+
+Or you can just use go with `GO15VENDOREXPERIMENT` enabled:
+
+```bash
+export $GO15VENDOREXPERIMENT=1
+go install
+```
+
 ## Roadmap
 
 - Actions
