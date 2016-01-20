@@ -17,6 +17,11 @@ import (
 	"strings"
 )
 
+// GitInfo is either the empty string (the default)
+// or is set to the git hash of the most recent commit
+// using the -X linker flag (Example: "2015-01-11-284c030+")
+var GitInfo string
+
 const actionNameUpdate = "update"
 const actionNameLogin = "login"
 
@@ -41,6 +46,9 @@ func init() {
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "%s updates DNS records via DNSimple.\n", executableName)
+		fmt.Fprintf(os.Stderr, "\n")
+
+		fmt.Fprintf(os.Stderr, "Version: %s\n", version())
 		fmt.Fprintf(os.Stderr, "\n")
 
 		fmt.Fprintf(os.Stderr, "Usage:\n")
@@ -241,4 +249,14 @@ type successMessage struct {
 // Text returns the text of the current message.
 func (m successMessage) Text() string {
 	return m.text
+}
+
+// version returns the git version of this binary (e.g. "2015-01-11-284c030+").
+// If the linker flags were not provided, the return value is "unknown".
+func version() string {
+	if GitInfo != "" {
+		return GitInfo
+	}
+
+	return "unknown"
 }
