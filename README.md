@@ -2,7 +2,7 @@
 
 Update DNS records from the command-line via DNSimple
 
-`dnsimple-cli` is a cross-platform command-line utility for updating subdomain records that are managed by DNSimple.
+`dnsimple-cli` is single self-contained command-line utility for updating subdomain records that are managed by DNSimple written go that works on Linux, Mac OS and Windows alike.
 
 ## Usage
 
