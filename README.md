@@ -35,6 +35,14 @@ dnsimple-cli login -email apiuser@example.com -apitoken TracsiflOgympacKoFieC
 
 The credentials are saved to: `~/.dnsimple-cli/credentials.json`
 
+### Action: `logout`
+
+Remove any stored DNSimple API credentials from disc.
+
+```bash
+dnsimple-cli logout
+```
+
 ### Action: `update`
 
 Update the DNS record for a given sub domain
@@ -93,7 +101,6 @@ go install
 ## Roadmap
 
 - Actions
-  - `logout`: Reset credentials
   - `create`: Create a subdomain record
   - `delete`: Delete a given subdomain record
   - `list`: List all subdomain records

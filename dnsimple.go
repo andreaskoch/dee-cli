@@ -24,19 +24,23 @@ var GitInfo string
 
 const actionNameUpdate = "update"
 const actionNameLogin = "login"
+const actionNameLogout = "logout"
 
 var (
 
 	// action: login
-	loginActionArguments = flag.NewFlagSet("login", flag.ContinueOnError)
+	loginActionArguments = flag.NewFlagSet(actionNameLogin, flag.ContinueOnError)
 	emailAddress         = loginActionArguments.String("email", "", "The e-mail address of the account to use")
 	apiToken             = loginActionArguments.String("apitoken", "", "The API token")
 
+	// action: logout
+	logoutActionArguments = flag.NewFlagSet(actionNameLogout, flag.ContinueOnError)
+
 	// action: update
-	updateSubdomainArguments = flag.NewFlagSet("update-subdomain", flag.ContinueOnError)
+	updateSubdomainArguments = flag.NewFlagSet(actionNameUpdate, flag.ContinueOnError)
 	domain                   = updateSubdomainArguments.String("domain", "", "Domain (e.g. example.com")
 	subdomain                = updateSubdomainArguments.String("subdomain", "", "Subdomain (e.g. wwww)")
-	ipAddress                = updateSubdomainArguments.String("ip", "", "IP address (e.g. 127.0.0.1. ::1")
+	ipAddress                = updateSubdomainArguments.String("ip", "", "IP address (e.g. 127.0.0.1, ::1)")
 )
 
 func init() {
@@ -56,17 +60,21 @@ func init() {
 		fmt.Fprintf(os.Stderr, "  %s <action> [arguments ...]\n", executableName)
 		fmt.Fprintf(os.Stderr, "\n")
 
-		fmt.Fprintf(os.Stderr, "Actions:\n\n")
+		fmt.Fprintf(os.Stderr, "Actions:\n")
 		fmt.Fprintf(os.Stderr, "%10s  %s\n", actionNameLogin, "Save DNSimple API credentials to disc")
+		fmt.Fprintf(os.Stderr, "%10s  %s\n", actionNameLogout, "Remove any stored DNSimple API credentials from disc")
 		fmt.Fprintf(os.Stderr, "%10s  %s\n", actionNameUpdate, "Update the DNS record for a given sub domain")
 		fmt.Fprintf(os.Stderr, "\n")
 
-		fmt.Fprintf(os.Stderr, "Action: %s\n\n", actionNameLogin)
+		fmt.Fprintf(os.Stderr, "Action: %s\n", actionNameLogin)
 		loginActionArguments.PrintDefaults()
-
 		fmt.Fprintf(os.Stderr, "\n")
 
-		fmt.Fprintf(os.Stderr, "Action: %s\n\n", actionNameUpdate)
+		fmt.Fprintf(os.Stderr, "Action: %s\n", actionNameLogout)
+		fmt.Fprintf(os.Stderr, "  <no arguments required>\n")
+		fmt.Fprintf(os.Stderr, "\n")
+
+		fmt.Fprintf(os.Stderr, "Action: %s\n", actionNameUpdate)
 		updateSubdomainArguments.PrintDefaults()
 	}
 
@@ -111,6 +119,19 @@ func main() {
 			}
 
 			fmt.Fprintf(os.Stdout, "Your API credentials have been saved to %s\n", credentialFilePath)
+			os.Exit(0)
+		}
+
+	case actionNameLogout:
+		{
+
+			// perform the logout
+			if logoutError := logout(credentialStore); logoutError != nil {
+				fmt.Fprintf(os.Stderr, "%s\n", logoutError.Error())
+				os.Exit(1)
+			}
+
+			fmt.Fprintf(os.Stdout, "Logout succeeded.\n")
 			os.Exit(0)
 		}
 
@@ -173,6 +194,20 @@ func login(credentialStore credentialStore, arguments []string) error {
 	}
 
 	return nil
+}
+
+// logout deletes the API credentials.
+func logout(credentialStore credentialDeleter) error {
+	err := credentialStore.DeleteCredentials()
+	if err == nil {
+		return nil
+	}
+
+	if isNoCredentialsError(err) {
+		return fmt.Errorf("No logout required: %s", err.Error())
+	}
+
+	return fmt.Errorf("Logout failed: %s", err.Error())
 }
 
 // update updates the DNS record of the domain given from the supplied arguments.

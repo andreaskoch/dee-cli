@@ -266,3 +266,66 @@ func Test_filesystemCredentialStore_WithoutSourceFile_GetCredentials_ErrorIsRetu
 		t.Logf("GetCredentials should return an error if the credential store has no source file.")
 	}
 }
+
+func Test_filesystemCredentialStore_WithoutSourceFile_DeleteCredentials_credentialsNotFoundErrorIsReturned(t *testing.T) {
+
+	// arrange
+	fs := afero.NewMemMapFs()
+	credentialFilePath := "/home/user/.dnsimple-cli/credentials.json"
+	credentialStore := filesystemCredentialStore{fs, credentialFilePath}
+
+	// act
+	err := credentialStore.DeleteCredentials()
+
+	// assert
+	if !isNoCredentialsError(err) {
+		t.Fail()
+		t.Logf("DeleteCredentials should return a noCredentials-error if the credential store has no source file.")
+	}
+}
+
+func Test_filesystemCredentialStore_SourceFileExists_DeleteCredentials_NoErrorIsReturned(t *testing.T) {
+
+	// arrange
+	fs := afero.NewMemMapFs()
+	credentialFilePath := "/home/user/.dnsimple-cli/credentials.json"
+
+	// create the initial file
+	f1, _ := fs.Create(credentialFilePath)
+	f1.WriteString("Some content")
+
+	credentialStore := filesystemCredentialStore{fs, credentialFilePath}
+
+	// act
+	err := credentialStore.DeleteCredentials()
+
+	// assert
+	if err != nil {
+		t.Fail()
+		t.Logf("DeleteCredentials should not return an error if the credential file exists and was successfully deleted.")
+	}
+}
+
+func Test_filesystemCredentialStore_SourceFileExists_DeleteCredentials_FileIsDeleted(t *testing.T) {
+
+	// arrange
+	fs := afero.NewMemMapFs()
+	credentialFilePath := "/home/user/.dnsimple-cli/credentials.json"
+
+	// create the initial file
+	f1, _ := fs.Create(credentialFilePath)
+	f1.WriteString("Some content")
+
+	credentialStore := filesystemCredentialStore{fs, credentialFilePath}
+
+	// act
+	credentialStore.DeleteCredentials()
+
+	// assert
+	fileInfo, _ := fs.Stat(credentialFilePath)
+	fileExists := fileInfo != nil
+	if fileExists {
+		t.Fail()
+		t.Logf("The file %q should be deleted after DeleteCredentials is executed.", credentialFilePath)
+	}
+}

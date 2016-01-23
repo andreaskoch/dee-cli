@@ -50,11 +50,18 @@ type credentialSaver interface {
 	SaveCredentials(credentials apiCredentials) error
 }
 
+// credentialDeleter deletes credentials.
+type credentialDeleter interface {
+	// DeleteCredentials deletes any saved credentials.
+	DeleteCredentials() error
+}
+
 // credentialStore provides functions for reading and
 // persisting apiCredentials.
 type credentialStore interface {
 	credentialProvider
 	credentialSaver
+	credentialDeleter
 }
 
 // newFilesystemCredentialStore creates a new filesystem credential store instance.
@@ -76,7 +83,7 @@ func (c filesystemCredentialStore) SaveCredentials(credentials apiCredentials) e
 
 	// check if the file system is initialized
 	if c.fs == nil {
-		return fmt.Errorf("No filesystem specified")
+		return fmt.Errorf("No filesystem provided")
 	}
 
 	// check if the file path is set
@@ -100,6 +107,26 @@ func (c filesystemCredentialStore) SaveCredentials(credentials apiCredentials) e
 
 	// write JSON to file
 	fmt.Fprintf(file, "%s", json)
+
+	return nil
+}
+
+// DeleteCredentials removes the saved credentials from disc.
+func (c filesystemCredentialStore) DeleteCredentials() error {
+
+	// check if the file system is initialized
+	if c.fs == nil {
+		return fmt.Errorf("No filesystem provided")
+	}
+
+	err := c.fs.Remove(c.filePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return noCredentialsError{fmt.Sprintf("There are no credentials stored at %q", c.filePath)}
+		}
+
+		return fmt.Errorf("Deleting %q failed: %s", c.filePath, err.Error())
+	}
 
 	return nil
 }
@@ -145,4 +172,21 @@ func (c filesystemCredentialStore) GetCredentials() (apiCredentials, error) {
 	}
 
 	return credentials, nil
+}
+
+type noCredentialsError struct {
+	message string
+}
+
+func (err noCredentialsError) Error() string {
+	return err.message
+}
+
+func isNoCredentialsError(err error) bool {
+	switch err.(type) {
+	case noCredentialsError:
+		return true
+	}
+
+	return false
 }

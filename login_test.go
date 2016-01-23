@@ -88,8 +88,9 @@ func Test_loginAction_Login_ValidCredentials_CredentialStoreSaveFails_ErrorIsRet
 }
 
 type testCredentialsStore struct {
-	saveFunc func(credentials apiCredentials) error
-	getFunc  func() (apiCredentials, error)
+	saveFunc   func(credentials apiCredentials) error
+	getFunc    func() (apiCredentials, error)
+	deleteFunc func() error
 }
 
 func (credStore testCredentialsStore) SaveCredentials(credentials apiCredentials) error {
@@ -98,4 +99,8 @@ func (credStore testCredentialsStore) SaveCredentials(credentials apiCredentials
 
 func (credStore testCredentialsStore) GetCredentials() (apiCredentials, error) {
 	return credStore.getFunc()
+}
+
+func (credStore testCredentialsStore) DeleteCredentials() error {
+	return credStore.deleteFunc()
 }

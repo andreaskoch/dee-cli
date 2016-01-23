@@ -235,6 +235,60 @@ func Test_update_ValidArguments_DNSUpdaterSucceeds_SuccessMessageContainsTheSubd
 	}
 }
 
+func Test_logout_CredentialStoreSucceedsInDeletingTheCredentials_NoErrorIsReturned(t *testing.T) {
+
+	// arrange
+	credentialStore := testCredentialsStore{deleteFunc: func() error {
+		return nil
+	}}
+
+	// act
+	err := logout(credentialStore)
+
+	// assert
+	if err != nil {
+		t.Fail()
+		t.Logf("logout(credentialStore) should not return an error if the credential store succeeds in deleting the credentials.")
+	}
+
+}
+
+func Test_logout_CredentialStoreReturnsNoCredentialsError_NoLogoutRequiredErrorIsReturned(t *testing.T) {
+
+	// arrange
+	credentialStore := testCredentialsStore{deleteFunc: func() error {
+		return noCredentialsError{"file does not exist"}
+	}}
+
+	// act
+	err := logout(credentialStore)
+
+	// assert
+	if !strings.Contains(err.Error(), "No logout required") {
+		t.Fail()
+		t.Logf("logout(credentialStore) should return an error stating that no logout was required.")
+	}
+
+}
+
+func Test_logout_CredentialStoreReturnsGenericError_LogoutFailedErrorIsReturned(t *testing.T) {
+
+	// arrange
+	credentialStore := testCredentialsStore{deleteFunc: func() error {
+		return fmt.Errorf("Some error")
+	}}
+
+	// act
+	err := logout(credentialStore)
+
+	// assert
+	if !strings.Contains(err.Error(), "Logout failed") {
+		t.Fail()
+		t.Logf("logout(credentialStore) should return an error stating that the logout failed.")
+	}
+
+}
+
 // dnsimpleUpdater updates DNSimple domain records.
 type testDNSUpdater struct {
 	updateSubdomainFunc func(domain, subdomain string, ip net.IP) error
