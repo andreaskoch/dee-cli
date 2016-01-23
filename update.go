@@ -46,7 +46,8 @@ func (updater *dnsimpleUpdater) UpdateSubdomain(domain, subdomain string, ip net
 	}
 
 	// get the subdomain record
-	subdomainRecord, err := updater.infoProvider.GetSubdomainRecord(domain, subdomain)
+	recordType := getDNSRecordTypeByIP(ip)
+	subdomainRecord, err := updater.infoProvider.GetSubdomainRecord(domain, subdomain, recordType)
 	if err != nil {
 		return err
 	}

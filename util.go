@@ -5,6 +5,7 @@
 package main
 
 import (
+	"net"
 	"regexp"
 	"strings"
 )
@@ -54,4 +55,14 @@ func isValidSubdomain(subdomain string) bool {
 	}
 
 	return true
+}
+
+// getDNSRecordTypeByIP returns the DNS record type for the given IP.
+// It will return "A" for an IPv4 address and "AAAA" for an IPv6 address.
+func getDNSRecordTypeByIP(ip net.IP) string {
+	if ip.To4() == nil {
+		return "AAAA"
+	}
+
+	return "A"
 }

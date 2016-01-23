@@ -5,6 +5,7 @@
 package main
 
 import (
+	"net"
 	"testing"
 )
 
@@ -102,4 +103,20 @@ func Test_isValidSubdomain_GivenTextIsInvalid_ResultIsFalse(t *testing.T) {
 			t.Logf("isValidSubdomain(%q) should have returned false", input)
 		}
 	}
+}
+
+// If the given IP is an IPv4 address, "A" should be returned as the record type.
+func Test_getDNSRecordTypeByIP_IPisIPv4_AIsReturned(t *testing.T) {
+	// arrange
+	ip := net.ParseIP("127.0.0.1")
+
+	// act
+	result := getDNSRecordTypeByIP(ip)
+
+	// assert
+	if result != "A" {
+		t.Fail()
+		t.Logf("getDNSRecordTypeByIP(%s) should return %q", ip, "A")
+	}
+
 }

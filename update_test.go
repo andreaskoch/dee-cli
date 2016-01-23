@@ -49,7 +49,7 @@ func Test_UpdateSubdomain_ValidParameters_SubdomainNotFound_ErrorIsReturned(t *t
 
 	updater := dnsimpleUpdater{
 		infoProvider: &testDNSInfoProvider{
-			getSubdomainRecordFunc: func(domain, subdomain string) (record dnsimple.Record, err error) {
+			getSubdomainRecordFunc: func(domain, subdomain, recordType string) (record dnsimple.Record, err error) {
 				return dnsimple.Record{}, fmt.Errorf("")
 			},
 		},
@@ -78,7 +78,7 @@ func Test_UpdateSubdomain_ValidParameters_SubdomainExists_DNSRecordUpdateFails_E
 	}
 
 	infoProvider := &testDNSInfoProvider{
-		getSubdomainRecordFunc: func(domain, subdomain string) (record dnsimple.Record, err error) {
+		getSubdomainRecordFunc: func(domain, subdomain, recordType string) (record dnsimple.Record, err error) {
 			return dnsimple.Record{}, nil
 		},
 	}
@@ -111,7 +111,7 @@ func Test_UpdateSubdomain_ValidParameters_SubdomainExists_DNSRecordUpdateSucceed
 	}
 
 	infoProvider := &testDNSInfoProvider{
-		getSubdomainRecordFunc: func(domain, subdomain string) (record dnsimple.Record, err error) {
+		getSubdomainRecordFunc: func(domain, subdomain, recordType string) (record dnsimple.Record, err error) {
 			return dnsimple.Record{}, nil
 		},
 	}
@@ -152,7 +152,7 @@ func Test_UpdateSubdomain_ValidParameters_SubdomainExists_ExistingIPIsTheSame_Er
 	}
 
 	infoProvider := &testDNSInfoProvider{
-		getSubdomainRecordFunc: func(domain, subdomain string) (record dnsimple.Record, err error) {
+		getSubdomainRecordFunc: func(domain, subdomain, recordType string) (record dnsimple.Record, err error) {
 			return existingRecord, nil
 		},
 	}
@@ -214,7 +214,7 @@ func Test_UpdateSubdomain_ValidParameters_SubdomainExists_OnlyTheIPIsChangedOnTh
 	}
 
 	infoProvider := &testDNSInfoProvider{
-		getSubdomainRecordFunc: func(domain, subdomain string) (record dnsimple.Record, err error) {
+		getSubdomainRecordFunc: func(domain, subdomain, recordType string) (record dnsimple.Record, err error) {
 			return existingRecord, nil
 		},
 	}
@@ -230,9 +230,9 @@ func Test_UpdateSubdomain_ValidParameters_SubdomainExists_OnlyTheIPIsChangedOnTh
 
 // testDNSInfoProvider is a DNS info-provider used for testing.
 type testDNSInfoProvider struct {
-	getSubdomainRecordFunc func(domain, subdomain string) (record dnsimple.Record, err error)
+	getSubdomainRecordFunc func(domain, subdomain, recordType string) (record dnsimple.Record, err error)
 }
 
-func (infoProvider *testDNSInfoProvider) GetSubdomainRecord(domain, subdomain string) (record dnsimple.Record, err error) {
-	return infoProvider.getSubdomainRecordFunc(domain, subdomain)
+func (infoProvider *testDNSInfoProvider) GetSubdomainRecord(domain, subdomain, recordType string) (record dnsimple.Record, err error) {
+	return infoProvider.getSubdomainRecordFunc(domain, subdomain, recordType)
 }

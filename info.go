@@ -10,7 +10,7 @@ import (
 )
 
 type dnsInfoProvider interface {
-	GetSubdomainRecord(domain, subdomain string) (record dnsimple.Record, err error)
+	GetSubdomainRecord(domain, subdomain, recordType string) (record dnsimple.Record, err error)
 }
 
 // newDNSimpleInfoProvider creates a new instance of the DNSimple info-provider.
@@ -25,10 +25,10 @@ type dnsimpleInfoProvider struct {
 	client dnsClient
 }
 
-// GetSubdomainRecord return the subdomain record that matches the given name.
-// If no matching subdomain was found or an error occurred while fetching the
-// available records an error will be returned.
-func (infoProvider *dnsimpleInfoProvider) GetSubdomainRecord(domain, subdomain string) (record dnsimple.Record, err error) {
+// GetSubdomainRecord return the subdomain record that matches the given name and record type.
+// If no matching subdomain was found or an error occurred while fetching the available records
+// an error will be returned.
+func (infoProvider *dnsimpleInfoProvider) GetSubdomainRecord(domain, subdomain, recordType string) (record dnsimple.Record, err error) {
 	records, err := infoProvider.client.GetRecords(domain)
 	if err != nil {
 		return dnsimple.Record{}, err
@@ -36,6 +36,10 @@ func (infoProvider *dnsimpleInfoProvider) GetSubdomainRecord(domain, subdomain s
 
 	for _, record := range records {
 		if record.Name != subdomain {
+			continue
+		}
+
+		if record.RecordType != recordType {
 			continue
 		}
 
