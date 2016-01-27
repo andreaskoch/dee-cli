@@ -43,6 +43,35 @@ Remove any stored DNSimple API credentials from disc.
 dnsimple-cli logout
 ```
 
+### Action: `list`
+
+List all available domains or subdomains.
+
+**Arguments**
+
+- `-domain`: A domain name (optional)
+- `-subdomain`: A subdomain name (optional)
+
+**Example**
+
+List all available domains:
+
+```bash
+dnsimple-cli list
+```
+
+List all subdomain of a given domain:
+
+```bash
+dnsimple-cli list -domain example.com
+```
+
+List all DNS records for a given subdomain:
+
+```bash
+dnsimple-cli list -domain example.com -subdomain www
+```
+
 ### Action: `update`
 
 Update the DNS record for a given sub domain
@@ -103,7 +132,6 @@ go install
 - Actions
   - `create`: Create a subdomain record
   - `delete`: Delete a given subdomain record
-  - `list`: List all subdomain records
 
 ## Contribute
 

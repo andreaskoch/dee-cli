@@ -11,6 +11,24 @@ import (
 	"testing"
 )
 
+type testCredentialsStore struct {
+	saveFunc   func(credentials apiCredentials) error
+	getFunc    func() (apiCredentials, error)
+	deleteFunc func() error
+}
+
+func (credStore testCredentialsStore) SaveCredentials(credentials apiCredentials) error {
+	return credStore.saveFunc(credentials)
+}
+
+func (credStore testCredentialsStore) GetCredentials() (apiCredentials, error) {
+	return credStore.getFunc()
+}
+
+func (credStore testCredentialsStore) DeleteCredentials() error {
+	return credStore.deleteFunc()
+}
+
 // getFileWithContent returns an afero.File with the given name and content.
 func getFileWithContent(name, content string) (afero.File, error) {
 	fs := afero.NewMemMapFs()

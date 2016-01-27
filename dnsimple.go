@@ -8,9 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/mitchellh/go-homedir"
-	"github.com/pearkes/dnsimple"
 	"github.com/spf13/afero"
-	"net"
 	"os"
 	"path"
 	"path/filepath"
@@ -22,71 +20,26 @@ import (
 // using the -X linker flag (Example: "2015-01-11-284c030+")
 var GitInfo string
 
-const actionNameUpdate = "update"
-const actionNameLogin = "login"
-const actionNameLogout = "logout"
-
-var (
-
-	// action: login
-	loginActionArguments = flag.NewFlagSet(actionNameLogin, flag.ContinueOnError)
-	emailAddress         = loginActionArguments.String("email", "", "The e-mail address of the account to use")
-	apiToken             = loginActionArguments.String("apitoken", "", "The API token")
-
-	// action: logout
-	logoutActionArguments = flag.NewFlagSet(actionNameLogout, flag.ContinueOnError)
-
-	// action: update
-	updateSubdomainArguments = flag.NewFlagSet(actionNameUpdate, flag.ContinueOnError)
-	domain                   = updateSubdomainArguments.String("domain", "", "Domain (e.g. example.com")
-	subdomain                = updateSubdomainArguments.String("subdomain", "", "Subdomain (e.g. wwww)")
-	ipAddress                = updateSubdomainArguments.String("ip", "", "IP address (e.g. 127.0.0.1, ::1)")
-)
-
-func init() {
-
-	executablePath := os.Args[0]
-	executableName := path.Base(executablePath)
-
-	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "%s updates DNS records via DNSimple.\n", executableName)
-		fmt.Fprintf(os.Stderr, "\n")
-
-		fmt.Fprintf(os.Stderr, "Version: %s\n", version())
-		fmt.Fprintf(os.Stderr, "\n")
-
-		fmt.Fprintf(os.Stderr, "Usage:\n")
-		fmt.Fprintf(os.Stderr, "\n")
-		fmt.Fprintf(os.Stderr, "  %s <action> [arguments ...]\n", executableName)
-		fmt.Fprintf(os.Stderr, "\n")
-
-		fmt.Fprintf(os.Stderr, "Actions:\n")
-		fmt.Fprintf(os.Stderr, "%10s  %s\n", actionNameLogin, "Save DNSimple API credentials to disc")
-		fmt.Fprintf(os.Stderr, "%10s  %s\n", actionNameLogout, "Remove any stored DNSimple API credentials from disc")
-		fmt.Fprintf(os.Stderr, "%10s  %s\n", actionNameUpdate, "Update the DNS record for a given sub domain")
-		fmt.Fprintf(os.Stderr, "\n")
-
-		fmt.Fprintf(os.Stderr, "Action: %s\n", actionNameLogin)
-		loginActionArguments.PrintDefaults()
-		fmt.Fprintf(os.Stderr, "\n")
-
-		fmt.Fprintf(os.Stderr, "Action: %s\n", actionNameLogout)
-		fmt.Fprintf(os.Stderr, "  <no arguments required>\n")
-		fmt.Fprintf(os.Stderr, "\n")
-
-		fmt.Fprintf(os.Stderr, "Action: %s\n", actionNameUpdate)
-		updateSubdomainArguments.PrintDefaults()
+// version returns the git version of this binary (e.g. "2015-01-11-284c030+").
+// If the linker flags were not provided, the return value is "unknown".
+func version() string {
+	if GitInfo != "" {
+		return GitInfo
 	}
 
+	return "unknown"
 }
 
-func main() {
+var actions []action
 
-	// get action
-	if len(os.Args) < 2 {
-		flag.Usage()
-		os.Exit(1)
-	}
+type action interface {
+	Name() string
+	Description() string
+	Usage() string
+	Execute(arguments []string) (message, error)
+}
+
+func init() {
 
 	// file system
 	filesystem := afero.NewOsFs()
@@ -105,159 +58,75 @@ func main() {
 	credentialFilePath := filepath.Join(baseFolder, "credentials.json")
 	credentialStore := filesystemCredentialStore{filesystem, credentialFilePath}
 
-	action := strings.TrimSpace(strings.ToLower(os.Args[1]))
-	switch action {
-	case actionNameLogin:
-		{
-			// select the login arguments
-			loginArguments := os.Args[2:]
+	// DNS client factory
+	dnsClientFactory := dnsimpleClientFactory{credentialStore}
 
-			// perform the login
-			if loginError := login(credentialStore, loginArguments); loginError != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", loginError.Error())
-				os.Exit(1)
-			}
+	// create DNSimple info provider
+	dnsimpleInfoProviderFactory := &dnsimpleInfoProviderFactory{dnsClientFactory}
 
-			fmt.Fprintf(os.Stdout, "Your API credentials have been saved to %s\n", credentialFilePath)
-			os.Exit(0)
-		}
+	// create DNSimple domain updater
+	dnsimpleUpdater := &dnsimpleUpdater{dnsClientFactory, dnsimpleInfoProviderFactory}
 
-	case actionNameLogout:
-		{
-
-			// perform the logout
-			if logoutError := logout(credentialStore); logoutError != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", logoutError.Error())
-				os.Exit(1)
-			}
-
-			fmt.Fprintf(os.Stdout, "Logout succeeded.\n")
-			os.Exit(0)
-		}
-
-	case actionNameUpdate:
-		{
-			// get the credentials
-			credentials, credentialError := credentialStore.GetCredentials()
-			if credentialError != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", credentialError.Error())
-				os.Exit(1)
-			}
-
-			// create a DNSimple client
-			dnsimpleClient, dnsimpleClientError := dnsimple.NewClient(credentials.Email, credentials.Token)
-			if dnsimpleClientError != nil {
-				fmt.Fprintf(os.Stderr, "Unable to create DNSimple client. Error: %s\n", dnsimpleClientError.Error())
-				os.Exit(1)
-			}
-
-			// create DNSimple info provider
-			dnsimpleInfoProvider := newDNSimpleInfoProvider(dnsimpleClient)
-
-			// create DNSimple domain updater
-			dnsimpleUpdater := newDNSimpleUpdater(dnsimpleClient, dnsimpleInfoProvider)
-
-			message, updateError := update(dnsimpleUpdater, os.Args[2:])
-			if updateError != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", updateError.Error())
-				os.Exit(1)
-			}
-
-			fmt.Fprintf(os.Stdout, "%s\n", message.Text())
-			os.Exit(0)
-		}
-
-	default:
-		{
-			fmt.Fprintf(os.Stderr, "Unknown action: %q\n", action)
-			os.Exit(1)
-		}
+	actions = []action{
+		loginAction{credentialStore},
+		logoutAction{credentialStore},
+		updateAction{dnsimpleUpdater, os.Stdin},
+		listAction{dnsimpleInfoProviderFactory},
 	}
+
+	// override the help information printer
+	// of the flag package
+	executablePath := os.Args[0]
+	executableName := path.Base(executablePath)
+	usagePrinter := newUsagePrinter(executableName, version(), actions)
+
+	flag.Usage = func() {
+		usagePrinter.PrintUsageInformation(os.Stderr)
+	}
+
 }
 
-// login parses the e-mail address and API token
-// from the given arguments and stores the credentials
-// in the given credential store. If the credentials are
-// invalid or the save failed and error is returned.
-func login(credentialStore credentialStore, arguments []string) error {
+func main() {
 
-	// parse the command line arguments
-	if parseError := loginActionArguments.Parse(arguments); parseError != nil {
-		return parseError
+	// get action
+	if len(os.Args) < 2 {
+		flag.Usage()
+		os.Exit(1)
 	}
 
-	// perform the login action
-	loginAction := newLoginAction(credentialStore)
-	err := loginAction.Login(*emailAddress, *apiToken)
+	// get the action name
+	selectedActionName := strings.TrimSpace(strings.ToLower(os.Args[1]))
+
+	// find a matching action
+	selectedAction := getActionByName(selectedActionName, actions)
+	if selectedAction == nil {
+		fmt.Fprintf(os.Stderr, "Unknown action: %q\n", selectedActionName)
+		os.Exit(1)
+	}
+
+	// execute the action
+	message, err := selectedAction.Execute(os.Args[2:])
 	if err != nil {
-		return fmt.Errorf("%s", err.Error())
+		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+		os.Exit(1)
+	}
+
+	fmt.Fprintf(os.Stdout, "%s\n", message.Text())
+	os.Exit(0)
+
+}
+
+// getActionByName returns the action which matches the given name from the list.
+func getActionByName(actionName string, actions []action) action {
+
+	for _, action := range actions {
+		if action.Name() != actionName {
+			continue
+		}
+		return action
 	}
 
 	return nil
-}
-
-// logout deletes the API credentials.
-func logout(credentialStore credentialDeleter) error {
-	err := credentialStore.DeleteCredentials()
-	if err == nil {
-		return nil
-	}
-
-	if isNoCredentialsError(err) {
-		return fmt.Errorf("No logout required: %s", err.Error())
-	}
-
-	return fmt.Errorf("Logout failed: %s", err.Error())
-}
-
-// update updates the DNS record of the domain given from the supplied arguments.
-// If the update fails an error is returned.
-func update(domainUpdater updater, arguments []string) (message, error) {
-
-	// parse the arguments
-	if parseError := updateSubdomainArguments.Parse(arguments); parseError != nil {
-		return nil, parseError
-	}
-
-	// domain
-	if *domain == "" {
-		return nil, fmt.Errorf("No domain supplied.")
-	}
-
-	// subdomain
-	if *subdomain == "" {
-		return nil, fmt.Errorf("No subdomain supplied.")
-	}
-
-	// take ip from stdin
-	if *ipAddress == "" && stdinHasData() {
-		ipAddressFromStdin := ""
-		fmt.Fscanf(os.Stdin, "%s", &ipAddressFromStdin)
-		ipAddress = &ipAddressFromStdin
-	}
-
-	if *ipAddress == "" {
-		return nil, fmt.Errorf("No IP address supplied.")
-	}
-
-	ip := net.ParseIP(*ipAddress)
-	updateError := domainUpdater.UpdateSubdomain(*domain, *subdomain, ip)
-	if updateError != nil {
-		return nil, fmt.Errorf("%s", updateError.Error())
-	}
-
-	return successMessage{fmt.Sprintf("Updated: %s.%s → %s", *subdomain, *domain, ip.String())}, nil
-}
-
-// stdinHasData returns true if there is data avaialble in os.Stdin, otherwise false.
-// see: http://stackoverflow.com/questions/22744443/check-if-there-is-something-to-read-on-stdin-in-golang
-func stdinHasData() bool {
-	stat, _ := os.Stdin.Stat()
-	if (stat.Mode() & os.ModeCharDevice) == 0 {
-		return true
-	}
-
-	return false
 }
 
 // getSettingsFolder returns the path of the settings folder
@@ -284,14 +153,4 @@ type successMessage struct {
 // Text returns the text of the current message.
 func (m successMessage) Text() string {
 	return m.text
-}
-
-// version returns the git version of this binary (e.g. "2015-01-11-284c030+").
-// If the linker flags were not provided, the return value is "unknown".
-func version() string {
-	if GitInfo != "" {
-		return GitInfo
-	}
-
-	return "unknown"
 }

@@ -6,6 +6,7 @@ package main
 
 import (
 	"net"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -65,4 +66,19 @@ func getDNSRecordTypeByIP(ip net.IP) string {
 	}
 
 	return "A"
+}
+
+// stdinHasData returns true if there is data avaialble in the given file (os.Stdin), otherwise false.
+// see: http://stackoverflow.com/questions/22744443/check-if-there-is-something-to-read-on-stdin-in-golang
+func stdinHasData(stdin *os.File) bool {
+	if stdin == nil {
+		return false
+	}
+
+	stat, _ := stdin.Stat()
+	if (stat.Mode() & os.ModeCharDevice) == 0 {
+		return true
+	}
+
+	return false
 }
