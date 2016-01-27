@@ -8,6 +8,11 @@
 			"revisionTime": "2015-12-17T15:04:12-05:00"
 		},
 		{
+			"path": "github.com/kr/fs",
+			"revision": "2788f0dbd16903de03cb8186e5c7d97b69ad387b",
+			"revisionTime": "2013-11-07T09:25:44+11:00"
+		},
+		{
 			"path": "github.com/mitchellh/go-homedir",
 			"revision": "d682a8f0cf139663a984ff12528da460ca963de9",
 			"revisionTime": "2015-10-24T22:24:27-07:00"
@@ -18,9 +23,64 @@
 			"revisionTime": "2015-10-22T14:22:09-04:00"
 		},
 		{
+			"path": "github.com/pkg/sftp",
+			"revision": "8a7343c6ed99a2934aea9c08c923c11df775b6db",
+			"revisionTime": "2016-01-11T17:04:06-05:00"
+		},
+		{
 			"path": "github.com/spf13/afero",
 			"revision": "2ec8b79d6117d1cb941e1a15bf04f25f8b3c332c",
 			"revisionTime": "2016-01-13T16:37:11-05:00"
+		},
+		{
+			"path": "github.com/spf13/afero/mem",
+			"revision": "2ec8b79d6117d1cb941e1a15bf04f25f8b3c332c",
+			"revisionTime": "2016-01-13T16:37:11-05:00"
+		},
+		{
+			"path": "github.com/spf13/afero/sftp",
+			"revision": "2ec8b79d6117d1cb941e1a15bf04f25f8b3c332c",
+			"revisionTime": "2016-01-13T16:37:11-05:00"
+		},
+		{
+			"path": "golang.org/x/crypto/curve25519",
+			"revision": "3760e016850398b85094c4c99e955b8c3dea5711",
+			"revisionTime": "2015-12-23T13:51:54-08:00"
+		},
+		{
+			"path": "golang.org/x/crypto/ssh",
+			"revision": "3760e016850398b85094c4c99e955b8c3dea5711",
+			"revisionTime": "2015-12-23T13:51:54-08:00"
+		},
+		{
+			"path": "golang.org/x/text/internal/gen",
+			"revision": "cf4986612c83df6c55578ba198316d1684a9a287",
+			"revisionTime": "2015-12-17T21:36:26+01:00"
+		},
+		{
+			"path": "golang.org/x/text/internal/triegen",
+			"revision": "cf4986612c83df6c55578ba198316d1684a9a287",
+			"revisionTime": "2015-12-17T21:36:26+01:00"
+		},
+		{
+			"path": "golang.org/x/text/internal/ucd",
+			"revision": "cf4986612c83df6c55578ba198316d1684a9a287",
+			"revisionTime": "2015-12-17T21:36:26+01:00"
+		},
+		{
+			"path": "golang.org/x/text/transform",
+			"revision": "cf4986612c83df6c55578ba198316d1684a9a287",
+			"revisionTime": "2015-12-17T21:36:26+01:00"
+		},
+		{
+			"path": "golang.org/x/text/unicode/cldr",
+			"revision": "cf4986612c83df6c55578ba198316d1684a9a287",
+			"revisionTime": "2015-12-17T21:36:26+01:00"
+		},
+		{
+			"path": "golang.org/x/text/unicode/norm",
+			"revision": "cf4986612c83df6c55578ba198316d1684a9a287",
+			"revisionTime": "2015-12-17T21:36:26+01:00"
 		}
 	]
 }

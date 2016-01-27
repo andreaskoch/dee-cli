@@ -15,18 +15,10 @@ type updater interface {
 	UpdateSubdomain(domain, subDomainName string, ip net.IP) error
 }
 
-// newDNSimpleUpdater creates a new DNSimple updater instance.
-func newDNSimpleUpdater(client *dnsimple.Client, infoProvider *dnsimpleInfoProvider) updater {
-	return &dnsimpleUpdater{
-		client:       client,
-		infoProvider: infoProvider,
-	}
-}
-
 // dnsimpleUpdater updates DNSimple domain records.
 type dnsimpleUpdater struct {
-	client       dnsClient
-	infoProvider dnsInfoProvider
+	clientFactory       dnsClientFactory
+	infoProviderFactory dnsInfoProviderFactory
 }
 
 // updateSubdomain updates the IP address of the given domain/subdomain
@@ -45,8 +37,19 @@ func (updater *dnsimpleUpdater) UpdateSubdomain(domain, subdomain string, ip net
 		return fmt.Errorf("No ip supplied")
 	}
 
+	client, clientError := updater.getClient()
+	if clientError != nil {
+		return fmt.Errorf("No DNS client available")
+	}
+
+	infoClient, infoClientError := updater.getInfoProvider()
+	if infoClientError != nil {
+		return fmt.Errorf("No DNS info provider available")
+	}
+
 	// get the subdomain record
-	subdomainRecord, err := updater.infoProvider.GetSubdomainRecord(domain, subdomain)
+	recordType := getDNSRecordTypeByIP(ip)
+	subdomainRecord, err := infoClient.GetSubdomainRecord(domain, subdomain, recordType)
 	if err != nil {
 		return err
 	}
@@ -64,10 +67,34 @@ func (updater *dnsimpleUpdater) UpdateSubdomain(domain, subdomain string, ip net
 		Ttl:   fmt.Sprintf("%d", subdomainRecord.Ttl),
 	}
 
-	_, updateError := updater.client.UpdateRecord(domain, fmt.Sprintf("%v", subdomainRecord.Id), changeRecord)
+	_, updateError := client.UpdateRecord(domain, fmt.Sprintf("%v", subdomainRecord.Id), changeRecord)
 	if updateError != nil {
 		return updateError
 	}
 
 	return nil
+}
+
+// getClient returns a DNS client instance or an error if the creation of the client failed.
+func (updater *dnsimpleUpdater) getClient() (dnsClient, error) {
+	if updater.clientFactory == nil {
+		return nil, fmt.Errorf("No DNS client factory available.")
+	}
+
+	client, err := updater.clientFactory.CreateClient()
+	if err != nil {
+		return nil, fmt.Errorf("Unable to create DNS client. %s", err.Error())
+	}
+
+	return client, nil
+}
+
+// getInfoProvider returns a DNS info provider instance or an error if the creation of the provider failed.
+func (updater *dnsimpleUpdater) getInfoProvider() (dnsInfoProvider, error) {
+	if updater.infoProviderFactory == nil {
+		return nil, fmt.Errorf("No DNS info provider factory available.")
+	}
+
+	infoProvider := updater.infoProviderFactory.CreateInfoProvider()
+	return infoProvider, nil
 }

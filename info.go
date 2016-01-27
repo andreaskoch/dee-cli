@@ -9,38 +9,130 @@ import (
 	"github.com/pearkes/dnsimple"
 )
 
-type dnsInfoProvider interface {
-	GetSubdomainRecord(domain, subdomain string) (record dnsimple.Record, err error)
+type dnsInfoProviderFactory interface {
+	CreateInfoProvider() dnsInfoProvider
 }
 
-// newDNSimpleInfoProvider creates a new instance of the DNSimple info-provider.
-func newDNSimpleInfoProvider(client *dnsimple.Client) *dnsimpleInfoProvider {
-	return &dnsimpleInfoProvider{
-		client: client,
-	}
+type dnsimpleInfoProviderFactory struct {
+	clientFactory dnsClientFactory
+}
+
+func (infoFactory dnsimpleInfoProviderFactory) CreateInfoProvider() dnsInfoProvider {
+	dnsimpleInfoProvider := &dnsimpleInfoProvider{infoFactory.clientFactory}
+	return dnsimpleInfoProvider
+}
+
+type dnsInfoProvider interface {
+	GetDomainNames() ([]string, error)
+	GetAllDNSRecords(domain string) ([]dnsimple.Record, error)
+	GetSubdomainRecord(domain, subdomain, recordType string) (dnsimple.Record, error)
+	GetSubdomainDNSRecords(domain, subdomain string) ([]dnsimple.Record, error)
 }
 
 // dnsimpleInfoProvider returns DNS records from the DNSimple API.
 type dnsimpleInfoProvider struct {
-	client dnsClient
+	clientFactory dnsClientFactory
 }
 
-// GetSubdomainRecord return the subdomain record that matches the given name.
-// If no matching subdomain was found or an error occurred while fetching the
-// available records an error will be returned.
-func (infoProvider *dnsimpleInfoProvider) GetSubdomainRecord(domain, subdomain string) (record dnsimple.Record, err error) {
-	records, err := infoProvider.client.GetRecords(domain)
+// GetDomainNames returns a list of all available domain names.
+func (infoProvider *dnsimpleInfoProvider) GetDomainNames() ([]string, error) {
+
+	client, clientError := infoProvider.getClient()
+	if clientError != nil {
+		return nil, fmt.Errorf("No DNS client available")
+	}
+
+	domains, err := client.GetDomains()
+	if err != nil {
+		return nil, err
+	}
+
+	var domainNames []string
+	for _, domain := range domains {
+		domainNames = append(domainNames, domain.Name)
+	}
+
+	return domainNames, nil
+}
+
+// GetAllDNSRecords returns all DNS records for the given domain.
+func (infoProvider *dnsimpleInfoProvider) GetAllDNSRecords(domain string) ([]dnsimple.Record, error) {
+
+	return infoProvider.getDNSRecords(domain, func(record dnsimple.Record) bool {
+		return true
+	})
+
+}
+
+// GetSubdomainRecord return the subdomain record that matches the given name and record type.
+// If no matching subdomain was found or an error occurred while fetching the available records
+// an error will be returned.
+func (infoProvider *dnsimpleInfoProvider) GetSubdomainRecord(domain, subdomain, recordType string) (dnsimple.Record, error) {
+
+	// get all records that have matching subdomain name and record type
+	records, err := infoProvider.getDNSRecords(domain, func(record dnsimple.Record) bool {
+		return record.Name == subdomain && record.RecordType == recordType
+	})
+
+	// error while fetching DNS records
 	if err != nil {
 		return dnsimple.Record{}, err
 	}
 
+	// no records found
+	if len(records) == 0 {
+		return dnsimple.Record{}, fmt.Errorf("No record found for %s.%s", subdomain, domain)
+	}
+
+	// return the first record found
+	return records[0], nil
+}
+
+// GetSubdomainDNSRecords returns all DNS records for the given subdomain.
+func (infoProvider *dnsimpleInfoProvider) GetSubdomainDNSRecords(domain, subdomain string) ([]dnsimple.Record, error) {
+
+	return infoProvider.getDNSRecords(domain, func(record dnsimple.Record) bool {
+		return record.Name == subdomain
+	})
+
+}
+
+// getDNSRecords returns all DNS records for the given domain that pass the given filter expression.
+func (infoProvider *dnsimpleInfoProvider) getDNSRecords(domain string, includeInResult func(record dnsimple.Record) bool) ([]dnsimple.Record, error) {
+
+	client, clientError := infoProvider.getClient()
+	if clientError != nil {
+		return nil, fmt.Errorf("No DNS client available")
+	}
+
+	// get all DNS records for the given domain
+	records, err := client.GetRecords(domain)
+	if err != nil {
+		return nil, err
+	}
+
+	var filteredRecords []dnsimple.Record
 	for _, record := range records {
-		if record.Name != subdomain {
+		if !includeInResult(record) {
 			continue
 		}
 
-		return record, nil
+		filteredRecords = append(filteredRecords, record)
 	}
 
-	return dnsimple.Record{}, fmt.Errorf("Domain %s.%s not found", subdomain, domain)
+	return filteredRecords, nil
+}
+
+// getClient returns a DNS client instance or an error if the creation of the client failed.
+func (infoProvider *dnsimpleInfoProvider) getClient() (dnsClient, error) {
+	if infoProvider.clientFactory == nil {
+		return nil, fmt.Errorf("No DNS client factory available.")
+	}
+
+	client, err := infoProvider.clientFactory.CreateClient()
+	if err != nil {
+		return nil, fmt.Errorf("Unable to create DNS client. %s", err.Error())
+	}
+
+	return client, nil
 }

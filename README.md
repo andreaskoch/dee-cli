@@ -2,7 +2,9 @@
 
 Update DNS records from the command-line via DNSimple
 
-`dnsimple-cli` is a cross-platform command-line utility for updating subdomain records that are managed by DNSimple.
+`dnsimple-cli` is single self-contained command-line utility for updating subdomain records that are managed by DNSimple written go that works on Linux, Mac OS and Windows alike.
+
+[![Build Status](https://travis-ci.org/andreaskoch/dnsimple-cli.svg?branch=master)](https://travis-ci.org/andreaskoch/dnsimple-cli)
 
 ## Usage
 
@@ -32,6 +34,43 @@ dnsimple-cli login -email apiuser@example.com -apitoken TracsiflOgympacKoFieC
 ```
 
 The credentials are saved to: `~/.dnsimple-cli/credentials.json`
+
+### Action: `logout`
+
+Remove any stored DNSimple API credentials from disc.
+
+```bash
+dnsimple-cli logout
+```
+
+### Action: `list`
+
+List all available domains or subdomains.
+
+**Arguments**
+
+- `-domain`: A domain name (optional)
+- `-subdomain`: A subdomain name (optional)
+
+**Example**
+
+List all available domains:
+
+```bash
+dnsimple-cli list
+```
+
+List all subdomain of a given domain:
+
+```bash
+dnsimple-cli list -domain example.com
+```
+
+List all DNS records for a given subdomain:
+
+```bash
+dnsimple-cli list -domain example.com -subdomain www
+```
 
 ### Action: `update`
 
@@ -91,10 +130,8 @@ go install
 ## Roadmap
 
 - Actions
-  - `logout`: Reset credentials
   - `create`: Create a subdomain record
   - `delete`: Delete a given subdomain record
-  - `list`: List all subdomain records
 
 ## Contribute
 
