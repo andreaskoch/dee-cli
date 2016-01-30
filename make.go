@@ -50,6 +50,7 @@ var (
 	installFlagIsSet      = flag.Bool("install", false, fmt.Sprintf("Compiles the %s binaries", ProjectName))
 	crossCompileFlagIsSet = flag.Bool("crosscompile", false, fmt.Sprintf("Compile %s binaries for all platforms and architectures", ProjectName))
 	versionFlagIsSet      = flag.Bool("version", false, "Get the current version number of the repository")
+	coverageFlagIsSet     = flag.Bool("coverage", false, "Run the test and create a code coverage report")
 
 	// The GOPATH for the current project
 	goPath = getWorkingDirectory()
@@ -140,6 +141,15 @@ func main() {
 		return
 	}
 
+	if *coverageFlagIsSet {
+		if err := codecoverage(); err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+
+		return
+	}
+
 	flag.Usage()
 }
 
@@ -153,6 +163,27 @@ func install() error {
 
 	return runCommand(os.Stdout, os.Stderr, goPath, environmentVariables, "go", "install", getBuildVersionFlag())
 
+}
+
+// codecoverage runs all tests and creates a code coverage report
+func codecoverage() error {
+
+	// prepare the environment variables
+	environmentVariables := cleanGoEnv()
+	environmentVariables = setEnv(environmentVariables, GOBIN_ENVIRONMENT_VARIBALE, goBin)
+	environmentVariables = setEnv(environmentVariables, GO15VENDOREXPERIMENT_ENVIRONMENT_VARIBALE, "1")
+
+	coverageError := runCommand(os.Stdout, os.Stderr, goPath, environmentVariables, "go", "test", "-coverprofile=coverage.out")
+	if coverageError != nil {
+		return coverageError
+	}
+
+	reportError := runCommand(os.Stdout, os.Stderr, goPath, environmentVariables, "go", "tool", "cover", "-html=coverage.out", "-o", "coverage.html")
+	if reportError != nil {
+		return reportError
+	}
+
+	return nil
 }
 
 // Cross-compile all parts of allmark for all supported platforms.
