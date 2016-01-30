@@ -43,4 +43,5 @@ type dnsClient interface {
 	GetRecords(domain string) ([]dnsimple.Record, error)
 	GetDomains() ([]dnsimple.Domain, error)
 	CreateRecord(domain string, opts *dnsimple.ChangeRecord) (string, error)
+	DestroyRecord(domain string, id string) error
 }

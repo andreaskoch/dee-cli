@@ -80,7 +80,7 @@ func Test_CreateSubdomain_ValidParameters_SubdomainNotFound_ErrorIsReturned(t *t
 	}
 }
 
-func Test_CreateSubdomain_ValidParameters_SubdomainExists_DNSRecordUpdateFails_ErrorIsReturned(t *testing.T) {
+func Test_CreateSubdomain_ValidParameters_SubdomainExists_DNSRecordCreationFails_ErrorIsReturned(t *testing.T) {
 	// arrange
 	domain := "example.com"
 	subdomain := "www"
@@ -113,11 +113,11 @@ func Test_CreateSubdomain_ValidParameters_SubdomainExists_DNSRecordUpdateFails_E
 	// assert
 	if err == nil {
 		t.Fail()
-		t.Logf("CreateSubdomain(%q, %q, %q) should return an error of the record update failed at the DNS client.", domain, subdomain, ip)
+		t.Logf("CreateSubdomain(%q, %q, %q, %q) should return an error of the record update failed at the DNS client.", domain, subdomain, ip, ttl)
 	}
 }
 
-func Test_CreateSubdomain_ValidParameters_SubdomainExists_DNSRecordUpdateSucceeds_NoErrorIsReturned(t *testing.T) {
+func Test_CreateSubdomain_ValidParameters_SubdomainExists_DNSRecordCreationSucceeds_NoErrorIsReturned(t *testing.T) {
 	// arrange
 	domain := "example.com"
 	subdomain := "www"
@@ -150,113 +150,6 @@ func Test_CreateSubdomain_ValidParameters_SubdomainExists_DNSRecordUpdateSucceed
 	// assert
 	if err != nil {
 		t.Fail()
-		t.Logf("CreateSubdomain(%q, %q, %q) should not return an error if the DNS record update succeeds.", domain, subdomain, ip)
+		t.Logf("CreateSubdomain(%q, %q, %q, %q) should not return an error if the DNS record update succeeds.", domain, subdomain, ttl, ip)
 	}
-}
-
-// If the update will not change the IP the update is aborted and an error is returned.
-func Test_CreateSubdomain_ValidParameters_SubdomainExists_ExistingIPIsTheSame_ErrorIsReturned(t *testing.T) {
-	// arrange
-	domain := "example.com"
-	subdomain := "www"
-	ttl := 3600
-	ip := net.ParseIP("::1")
-
-	dnsClient := &testDNSClient{
-		createRecordFunc: func(domain string, opts *dnsimple.ChangeRecord) (string, error) {
-			return "", nil
-		},
-	}
-
-	existingRecord := dnsimple.Record{
-		Id:         1,
-		Name:       "example.com",
-		Content:    "::1",
-		RecordType: "AAAA",
-		Ttl:        600,
-	}
-
-	infoProvider := &testDNSInfoProvider{
-		getSubdomainRecordFunc: func(domain, subdomain, recordType string) (record dnsimple.Record, err error) {
-			return existingRecord, nil
-		},
-	}
-
-	dnsClientFactory := testDNSClientFactory{dnsClient}
-	infoProviderFactory := testInfoProviderFactory{infoProvider}
-
-	creator := dnsimpleCreator{
-		clientFactory:       dnsClientFactory,
-		infoProviderFactory: infoProviderFactory,
-	}
-
-	// act
-	err := creator.CreateSubdomain(domain, subdomain, ttl, ip)
-
-	// assert
-	if err == nil {
-		t.Fail()
-		t.Logf("CreateSubdomain(%q, %q, %q) should return an error because the IP of the existing record is the same as in the update.", domain, subdomain, ip)
-	}
-}
-
-func Test_CreateSubdomain_ValidParameters_SubdomainExists_OnlyTheIPIsChangedOnTheDNSRecord(t *testing.T) {
-	// arrange
-	domain := "example.com"
-	subdomain := "www"
-	ttl := 3600
-	ip := net.ParseIP("::2")
-
-	existingRecord := dnsimple.Record{
-		Id:         1,
-		Name:       "example.com",
-		Content:    "::1",
-		RecordType: "AAAA",
-		Ttl:        600,
-	}
-
-	dnsClient := &testDNSClient{
-		createRecordFunc: func(domain string, opts *dnsimple.ChangeRecord) (string, error) {
-
-			// assert
-			if opts.Name != existingRecord.Name {
-				t.Fail()
-				t.Logf("The DNS name should not change during an update (Old: %q, New: %q)", existingRecord.Name, opts.Name)
-			}
-
-			if opts.Type != existingRecord.RecordType {
-				t.Fail()
-				t.Logf("The DNS record type should not change during an update (Old: %q, New: %q)", existingRecord.RecordType, opts.Type)
-			}
-
-			if opts.Ttl != fmt.Sprintf("%d", existingRecord.Ttl) {
-				t.Fail()
-				t.Logf("The DNS record TTL should not change during an update (Old: %q, New: %q)", existingRecord.Ttl, opts.Ttl)
-			}
-
-			if opts.Value != ip.String() {
-				t.Fail()
-				t.Logf("The DNS record value should have changed to %q", ip.String())
-			}
-
-			return "", nil
-		},
-	}
-
-	infoProvider := &testDNSInfoProvider{
-		getSubdomainRecordFunc: func(domain, subdomain, recordType string) (record dnsimple.Record, err error) {
-			return existingRecord, nil
-		},
-	}
-
-	dnsClientFactory := testDNSClientFactory{dnsClient}
-	infoProviderFactory := testInfoProviderFactory{infoProvider}
-
-	creator := dnsimpleCreator{
-		clientFactory:       dnsClientFactory,
-		infoProviderFactory: infoProviderFactory,
-	}
-
-	// act
-	creator.CreateSubdomain(domain, subdomain, ttl, ip)
 }

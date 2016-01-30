@@ -11,10 +11,11 @@ import (
 )
 
 type testDNSClient struct {
-	updateRecordFunc func(domain string, id string, opts *dnsimple.ChangeRecord) (string, error)
-	getRecordsFunc   func(domain string) ([]dnsimple.Record, error)
-	getDomainsFunc   func() ([]dnsimple.Domain, error)
-	createRecordFunc func(domain string, opts *dnsimple.ChangeRecord) (string, error)
+	updateRecordFunc  func(domain string, id string, opts *dnsimple.ChangeRecord) (string, error)
+	getRecordsFunc    func(domain string) ([]dnsimple.Record, error)
+	getDomainsFunc    func() ([]dnsimple.Domain, error)
+	createRecordFunc  func(domain string, opts *dnsimple.ChangeRecord) (string, error)
+	destroyRecordFunc func(domain string, id string) error
 }
 
 func (dnsClient *testDNSClient) UpdateRecord(domain string, id string, opts *dnsimple.ChangeRecord) (string, error) {
@@ -31,6 +32,10 @@ func (dnsClient *testDNSClient) GetDomains() ([]dnsimple.Domain, error) {
 
 func (dnsClient *testDNSClient) CreateRecord(domain string, opts *dnsimple.ChangeRecord) (string, error) {
 	return dnsClient.createRecordFunc(domain, opts)
+}
+
+func (dnsClient *testDNSClient) DestroyRecord(domain string, id string) error {
+	return dnsClient.destroyRecordFunc(domain, id)
 }
 
 // testDNSClientFactory creates test DNS clients.

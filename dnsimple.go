@@ -67,6 +67,9 @@ func init() {
 	// create DNSimple domain creator
 	dnsimpleCreator := &dnsimpleCreator{dnsClientFactory, dnsimpleInfoProviderFactory}
 
+	// create DNSimple domain deleter
+	dnsimpleDeleter := &dnsimpleDeleter{dnsClientFactory, dnsimpleInfoProviderFactory}
+
 	// create DNSimple domain updater
 	dnsimpleUpdater := &dnsimpleUpdater{dnsClientFactory, dnsimpleInfoProviderFactory}
 
@@ -74,8 +77,9 @@ func init() {
 		loginAction{credentialStore},
 		logoutAction{credentialStore},
 		createAction{dnsimpleCreator, os.Stdin},
-		updateAction{dnsimpleUpdater, os.Stdin},
 		listAction{dnsimpleInfoProviderFactory},
+		updateAction{dnsimpleUpdater, os.Stdin},
+		deleteAction{dnsimpleDeleter},
 	}
 
 	// override the help information printer

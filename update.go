@@ -51,7 +51,7 @@ func (updater *dnsimpleUpdater) UpdateSubdomain(domain, subdomain string, ip net
 	recordType := getDNSRecordTypeByIP(ip)
 	subdomainRecord, err := infoClient.GetSubdomainRecord(domain, subdomain, recordType)
 	if err != nil {
-		return fmt.Errorf("Unable to locate DNS record %q.", subdomain)
+		return fmt.Errorf("No address record of type %q found for %q", recordType, subdomain)
 	}
 
 	// check if an update is necessary

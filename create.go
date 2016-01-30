@@ -21,7 +21,7 @@ type dnsimpleCreator struct {
 	infoProviderFactory dnsInfoProviderFactory
 }
 
-// CreateSubdomain updates the IP address of the given domain/subdomain
+// CreateSubdomain creates an address record for the given domain
 func (creator *dnsimpleCreator) CreateSubdomain(domain, subdomain string, timeToLive int, ip net.IP) error {
 
 	// validate parameters
@@ -50,7 +50,7 @@ func (creator *dnsimpleCreator) CreateSubdomain(domain, subdomain string, timeTo
 	// check if the record already exists
 	recordType := getDNSRecordTypeByIP(ip)
 	if subdomainRecord, _ := infoClient.GetSubdomainRecord(domain, subdomain, recordType); subdomainRecord.Id != 0 {
-		return fmt.Errorf("The subdomain %q already exists.", subdomain)
+		return fmt.Errorf("No address record of type %q found for %q", recordType, subdomain)
 	}
 
 	// create record

@@ -16,7 +16,7 @@ var (
 	actionNameCreate = "create"
 
 	createAddressRecordArguments = flag.NewFlagSet(actionNameCreate, flag.ContinueOnError)
-	createDomain                 = createAddressRecordArguments.String("domain", "", "Domain (e.g. example.com")
+	createDomain                 = createAddressRecordArguments.String("domain", "", "Domain (e.g. example.com)")
 	createSubdomain              = createAddressRecordArguments.String("subdomain", "", "Subdomain (e.g. www)")
 	createIP                     = createAddressRecordArguments.String("ip", "", "IP address (e.g. ::1, 127.0.0.1)")
 	createTTL                    = createAddressRecordArguments.Int("ttl", 600, "The time to live in seconds")

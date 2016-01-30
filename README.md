@@ -18,6 +18,15 @@ Get help:
 dnsimple-cli --help
 ```
 
+**Actions**:
+
+- `login` to the DNSimple API
+- `logout`
+- `create` an address record for a given domain
+- `list` all available domain, subdomain and DNS records
+- `update` a given address record by name
+- `delete` a given address record by name
+
 ### Action: `login`
 
 Save DNSimple API credentials to disc.
@@ -52,7 +61,7 @@ List all available domains or subdomains.
 - `-domain`: A domain name (optional)
 - `-subdomain`: A subdomain name (optional)
 
-**Example**
+**Examples**
 
 List all available domains:
 
@@ -74,7 +83,7 @@ dnsimple-cli list -domain example.com -subdomain www
 
 ### Action: `create`
 
-Create an address DNS record.
+Create an address record.
 
 **Arguments**:
 
@@ -83,7 +92,7 @@ Create an address DNS record.
 - `-ip`: An IPv4 or IPv6 address (required)
 - `-ttl`: The time to live (TTL) for the DNS record in seconds (default: 600)
 
-**Example**:
+**Examples**:
 
 Create an `AAAA` record for the subdomain `www`:
 
@@ -109,6 +118,30 @@ The `-ip` parameter can also be passed via Stdin:
 echo "2001:0db8:0000:0042:0000:8a2e:0370:7334" | dnsimple-cli create -domain example.com -subdomain www -ttl 3600
 ```
 
+### Action: `delete`
+
+Deletes an address record.
+
+**Arguments**:
+
+- `-domain`: A domain name (required)
+- `-subdomain`: The subdomain name (required)
+- `-type`: The address record type (required, e.g. "AAAA", "A")
+
+**Examples**:
+
+Delete the IPv6 address record for www.example.com:
+
+```bash
+dnsimple-cli delete -domain example.com -subdomain www -type AAAA
+```
+
+Delete the IPv4 address record for www.example.com:
+
+```bash
+dnsimple-cli delete -domain example.com -subdomain www -type A
+```
+
 ### Action: `update`
 
 Update the DNS record for a given sub domain
@@ -119,7 +152,7 @@ Update the DNS record for a given sub domain
 - `-subdomain`: A subdomain name (e.g. `www`)
 - `-ip`: An IPv4 or IPv6 address
 
-**Example**:
+**Examples**:
 
 Set the `AAAA` record of `www.example.com` to the given IP address:
 
@@ -163,11 +196,6 @@ Or you can just use go with `GO15VENDOREXPERIMENT` enabled:
 export $GO15VENDOREXPERIMENT=1
 go install
 ```
-
-## Roadmap
-
-- Actions
-  - `delete`: Delete a given subdomain record
 
 ## Contribute
 

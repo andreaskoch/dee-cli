@@ -74,17 +74,17 @@ func Test_createAction_InvalidArguments_ErrorIsReturned(t *testing.T) {
 			"127.0.0.1",
 		},
 		{
-			"-domainname",
+			"-domain",
 			"example.com",
 			"-subdomain",
+			"www",
 			"-ttl",
 			"3600",
-			"www",
 			"-ip",
 			"",
 		},
 		{
-			"-domainname",
+			"-domain",
 			"example.com",
 			"-subdomain",
 			"www",
@@ -94,7 +94,7 @@ func Test_createAction_InvalidArguments_ErrorIsReturned(t *testing.T) {
 			"dsadklsajdklsakldj",
 		},
 		{
-			"-domainname",
+			"-domain",
 			"example.com",
 			"-subdomain",
 			"www",
@@ -349,7 +349,7 @@ func Test_createAction_ValidArguments_NoErrorIsReturned(t *testing.T) {
 	}
 }
 
-// createAction.Execute should return an error if the DNS Updater responds with one.
+// createAction.Execute should return an error if the DNS creator responds with one.
 func Test_createAction_ValidArguments_DNSCreatorRespondsWithError_ErrorIsReturned(t *testing.T) {
 	// arrange
 	arguments := []string{
@@ -363,7 +363,7 @@ func Test_createAction_ValidArguments_DNSCreatorRespondsWithError_ErrorIsReturne
 
 	dnsCreator := &testDNSCreator{
 		createSubdomainFunc: func(domain, subdomain string, timeToLive int, ip net.IP) error {
-			return fmt.Errorf("DNS Record Update failed")
+			return fmt.Errorf("DNS Record create failed")
 		},
 	}
 
@@ -375,11 +375,11 @@ func Test_createAction_ValidArguments_DNSCreatorRespondsWithError_ErrorIsReturne
 	// assert
 	if err == nil {
 		t.Fail()
-		t.Logf("createAction.Execute(dnsCreator, %q) should return an error because the DNS updater returned one.", arguments)
+		t.Logf("createAction.Execute(dnsCreator, %q) should return an error because the DNS creator returned one.", arguments)
 	}
 }
 
-// createAction.Execute should return a success message if the DNS updater succeeds.
+// createAction.Execute should return a success message if the DNS creator succeeds.
 func Test_createAction_ValidArguments_DNSCreatorSucceeds_SuccessMessageIsReturned(t *testing.T) {
 	// arrange
 	arguments := []string{
@@ -405,7 +405,7 @@ func Test_createAction_ValidArguments_DNSCreatorSucceeds_SuccessMessageIsReturne
 	// assert
 	if response == nil {
 		t.Fail()
-		t.Logf("createAction.Execute(dnsCreator, %q) should respond with a success message if the DNS updater succeeds.", arguments)
+		t.Logf("createAction.Execute(dnsCreator, %q) should respond with a success message if the DNS creator succeeds.", arguments)
 	}
 }
 

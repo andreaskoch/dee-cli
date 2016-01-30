@@ -16,7 +16,7 @@ var (
 	actionNameUpdate = "update"
 
 	updateAddressRecordArguments = flag.NewFlagSet(actionNameUpdate, flag.ContinueOnError)
-	updateDomain                 = updateAddressRecordArguments.String("domain", "", "Domain (e.g. example.com")
+	updateDomain                 = updateAddressRecordArguments.String("domain", "", "Domain (e.g. example.com)")
 	updateSubdomain              = updateAddressRecordArguments.String("subdomain", "", "Subdomain (e.g. www)")
 	updateIP                     = updateAddressRecordArguments.String("ip", "", "IP address (e.g. ::1, 127.0.0.1)")
 )
