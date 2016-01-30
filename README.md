@@ -201,3 +201,7 @@ go install
 
 If you find a bug or if you want to add or improve some feature please create an issue or send me a pull requests.
 All contributions are welcome.
+
+If you are planning to sign up for [DNSimple](https://dnsimple.com) and if you like this tool I would be happy if you use this link: [https://dnsimple.com/r/381546095cf6a2](https://dnsimple.com/r/381546095cf6a2)
+
+One month of free service for the both of us :dancers:
