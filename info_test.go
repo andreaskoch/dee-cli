@@ -20,26 +20,26 @@ func (infoFactory testInfoProviderFactory) CreateInfoProvider() dnsInfoProvider 
 
 // testDNSInfoProvider is a DNS info-provider used for testing.
 type testDNSInfoProvider struct {
-	getDomainNamesFunc         func() ([]string, error)
-	getAllDNSRecordsFunc       func(domain string) ([]dnsimple.Record, error)
-	getSubdomainRecordFunc     func(domain, subdomain, recordType string) (dnsimple.Record, error)
-	getSubdomainDNSRecordsFunc func(domain, subdomain string) ([]dnsimple.Record, error)
+	getDomainNamesFunc      func() ([]string, error)
+	getDomainRecordsFunc    func(domain string) ([]dnsimple.Record, error)
+	getSubdomainRecordFunc  func(domain, subdomain, recordType string) (dnsimple.Record, error)
+	getSubdomainRecordsFunc func(domain, subdomain string) ([]dnsimple.Record, error)
 }
 
 func (infoProvider testDNSInfoProvider) GetDomainNames() ([]string, error) {
 	return infoProvider.getDomainNamesFunc()
 }
 
-func (infoProvider testDNSInfoProvider) GetAllDNSRecords(domain string) ([]dnsimple.Record, error) {
-	return infoProvider.getAllDNSRecordsFunc(domain)
+func (infoProvider testDNSInfoProvider) GetDomainRecords(domain string) ([]dnsimple.Record, error) {
+	return infoProvider.getDomainRecordsFunc(domain)
 }
 
 func (infoProvider testDNSInfoProvider) GetSubdomainRecord(domain, subdomain, recordType string) (record dnsimple.Record, err error) {
 	return infoProvider.getSubdomainRecordFunc(domain, subdomain, recordType)
 }
 
-func (infoProvider testDNSInfoProvider) GetSubdomainDNSRecords(domain, subdomain string) ([]dnsimple.Record, error) {
-	return infoProvider.getSubdomainDNSRecordsFunc(domain, subdomain)
+func (infoProvider testDNSInfoProvider) GetSubdomainRecords(domain, subdomain string) ([]dnsimple.Record, error) {
+	return infoProvider.getSubdomainRecordsFunc(domain, subdomain)
 }
 
 func Test_NoDNSClientSupplied_GetSubdomainRecord_ErrorIsReturned(t *testing.T) {
@@ -52,7 +52,7 @@ func Test_NoDNSClientSupplied_GetSubdomainRecord_ErrorIsReturned(t *testing.T) {
 	// assert
 	if err == nil {
 		t.Fail()
-		t.Errorf("GetSubdomainRecord() should return an error if no DNS client was supplied to the info provider.")
+		t.Errorf("GetSubdomainRecord() should return an error if no DNS client was supplied to the info provider")
 	}
 
 }

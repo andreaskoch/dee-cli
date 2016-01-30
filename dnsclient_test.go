@@ -6,8 +6,37 @@ package main
 
 import (
 	"fmt"
+	"github.com/pearkes/dnsimple"
 	"testing"
 )
+
+type testDNSClient struct {
+	updateRecordFunc  func(domain string, id string, opts *dnsimple.ChangeRecord) (string, error)
+	getRecordsFunc    func(domain string) ([]dnsimple.Record, error)
+	getDomainsFunc    func() ([]dnsimple.Domain, error)
+	createRecordFunc  func(domain string, opts *dnsimple.ChangeRecord) (string, error)
+	destroyRecordFunc func(domain string, id string) error
+}
+
+func (dnsClient *testDNSClient) UpdateRecord(domain string, id string, opts *dnsimple.ChangeRecord) (string, error) {
+	return dnsClient.updateRecordFunc(domain, id, opts)
+}
+
+func (dnsClient *testDNSClient) GetRecords(domain string) ([]dnsimple.Record, error) {
+	return dnsClient.getRecordsFunc(domain)
+}
+
+func (dnsClient *testDNSClient) GetDomains() ([]dnsimple.Domain, error) {
+	return dnsClient.getDomainsFunc()
+}
+
+func (dnsClient *testDNSClient) CreateRecord(domain string, opts *dnsimple.ChangeRecord) (string, error) {
+	return dnsClient.createRecordFunc(domain, opts)
+}
+
+func (dnsClient *testDNSClient) DestroyRecord(domain string, id string) error {
+	return dnsClient.destroyRecordFunc(domain, id)
+}
 
 // testDNSClientFactory creates test DNS clients.
 type testDNSClientFactory struct {

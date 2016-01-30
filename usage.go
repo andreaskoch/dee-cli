@@ -45,12 +45,8 @@ func (printer usagePrinter) PrintUsageInformation(output io.Writer) {
 	fmt.Fprintf(output, "\n")
 
 	// Action details
-	for index, action := range printer.actions {
+	for _, action := range printer.actions {
 		fmt.Fprintf(output, "Action: %s\n", action.Name())
-		fmt.Fprintf(output, "%s", action.Usage())
-
-		if index < len(printer.actions)-1 {
-			fmt.Fprintf(output, "\n")
-		}
+		fmt.Fprintf(output, "%s\n", action.Usage())
 	}
 }

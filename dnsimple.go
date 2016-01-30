@@ -64,14 +64,16 @@ func init() {
 	// create DNSimple info provider
 	dnsimpleInfoProviderFactory := &dnsimpleInfoProviderFactory{dnsClientFactory}
 
-	// create DNSimple domain updater
-	dnsimpleUpdater := &dnsimpleUpdater{dnsClientFactory, dnsimpleInfoProviderFactory}
+	// create a DNS editor instance
+	dnsimpleEditor := &dnsEditor{dnsClientFactory, dnsimpleInfoProviderFactory}
 
 	actions = []action{
 		loginAction{credentialStore},
 		logoutAction{credentialStore},
-		updateAction{dnsimpleUpdater, os.Stdin},
 		listAction{dnsimpleInfoProviderFactory},
+		createAction{dnsimpleEditor, os.Stdin},
+		updateAction{dnsimpleEditor, os.Stdin},
+		deleteAction{dnsimpleEditor},
 	}
 
 	// override the help information printer
@@ -81,7 +83,7 @@ func init() {
 	usagePrinter := newUsagePrinter(executableName, version(), actions)
 
 	flag.Usage = func() {
-		usagePrinter.PrintUsageInformation(os.Stderr)
+		usagePrinter.PrintUsageInformation(os.Stdout)
 	}
 
 }

@@ -123,7 +123,7 @@ func Test_listAction_DomainAndSubDomainAreSet_SubdomainRecordsArePrinted(t *test
 	}
 
 	dnsInfoProvider := testDNSInfoProvider{
-		getSubdomainDNSRecordsFunc: func(domain, subdomain string) ([]dnsimple.Record, error) {
+		getSubdomainRecordsFunc: func(domain, subdomain string) ([]dnsimple.Record, error) {
 			records := []dnsimple.Record{
 				dnsimple.Record{
 					Name:       "www",
@@ -166,7 +166,7 @@ func Test_listAction_DomainAndSubDomainAreSet_InfoProviderReturnsError_ErrorIsRe
 	}
 
 	dnsInfoProvider := testDNSInfoProvider{
-		getSubdomainDNSRecordsFunc: func(domain, subdomain string) ([]dnsimple.Record, error) {
+		getSubdomainRecordsFunc: func(domain, subdomain string) ([]dnsimple.Record, error) {
 			return nil, fmt.Errorf("No records found")
 		},
 	}
@@ -194,7 +194,7 @@ func Test_listAction_DomainSet_DNSRecordsArePrinted(t *testing.T) {
 	}
 
 	dnsInfoProvider := testDNSInfoProvider{
-		getAllDNSRecordsFunc: func(domain string) ([]dnsimple.Record, error) {
+		getDomainRecordsFunc: func(domain string) ([]dnsimple.Record, error) {
 			records := []dnsimple.Record{
 				dnsimple.Record{
 					Name:       "www",
@@ -235,7 +235,7 @@ func Test_listAction_DomainSet_InfoProviderReturnsError_ErrorIsReturned(t *testi
 	}
 
 	dnsInfoProvider := testDNSInfoProvider{
-		getAllDNSRecordsFunc: func(domain string) ([]dnsimple.Record, error) {
+		getDomainRecordsFunc: func(domain string) ([]dnsimple.Record, error) {
 			return nil, fmt.Errorf("Error DNS record")
 		},
 	}
@@ -353,7 +353,7 @@ func Test_listAction_OnlyDomainIsSet_DomainRecordsArePrinted(t *testing.T) {
 	}
 
 	dnsInfoProvider := testDNSInfoProvider{
-		getAllDNSRecordsFunc: func(domain string) ([]dnsimple.Record, error) {
+		getDomainRecordsFunc: func(domain string) ([]dnsimple.Record, error) {
 			records := []dnsimple.Record{
 				dnsimple.Record{
 					Name:       "www",

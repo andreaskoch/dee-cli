@@ -42,22 +42,6 @@ type dnsClient interface {
 	UpdateRecord(domain string, id string, opts *dnsimple.ChangeRecord) (string, error)
 	GetRecords(domain string) ([]dnsimple.Record, error)
 	GetDomains() ([]dnsimple.Domain, error)
-}
-
-type testDNSClient struct {
-	updateRecordFunc func(domain string, id string, opts *dnsimple.ChangeRecord) (string, error)
-	getRecordsFunc   func(domain string) ([]dnsimple.Record, error)
-	getDomainsFunc   func() ([]dnsimple.Domain, error)
-}
-
-func (dnsClient *testDNSClient) UpdateRecord(domain string, id string, opts *dnsimple.ChangeRecord) (string, error) {
-	return dnsClient.updateRecordFunc(domain, id, opts)
-}
-
-func (dnsClient *testDNSClient) GetRecords(domain string) ([]dnsimple.Record, error) {
-	return dnsClient.getRecordsFunc(domain)
-}
-
-func (dnsClient *testDNSClient) GetDomains() ([]dnsimple.Domain, error) {
-	return dnsClient.getDomainsFunc()
+	CreateRecord(domain string, opts *dnsimple.ChangeRecord) (string, error)
+	DestroyRecord(domain string, id string) error
 }

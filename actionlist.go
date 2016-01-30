@@ -62,7 +62,7 @@ func (action listAction) Execute(arguments []string) (message, error) {
 
 	// case: 2 get DNS records for the given subdomain
 	if domainParamIsSet && subdomainParamIsSet {
-		records, err := infoProvider.GetSubdomainDNSRecords(*listDomain, *listSubdomain)
+		records, err := infoProvider.GetSubdomainRecords(*listDomain, *listSubdomain)
 		if err != nil {
 			return nil, fmt.Errorf("Unable to fetch DNS records for subdomain %s.%s", *listSubdomain, *listDomain)
 		}
@@ -72,7 +72,7 @@ func (action listAction) Execute(arguments []string) (message, error) {
 
 	// case 3: get all subdomains
 	if domainParamIsSet && !subdomainParamIsSet {
-		records, err := infoProvider.GetAllDNSRecords(*listDomain)
+		records, err := infoProvider.GetDomainRecords(*listDomain)
 		if err != nil {
 			return nil, fmt.Errorf("Unable to fetch DNS records for domain %s", *listDomain)
 		}
@@ -92,7 +92,7 @@ func (action listAction) Execute(arguments []string) (message, error) {
 // getInfoProvider returns a DNS info provider instance or an error if the creation of the provider failed.
 func (action listAction) getInfoProvider() (dnsInfoProvider, error) {
 	if action.infoProviderFactory == nil {
-		return nil, fmt.Errorf("No DNS info provider factory available.")
+		return nil, fmt.Errorf("No DNS info provider factory available")
 	}
 
 	infoProvider := action.infoProviderFactory.CreateInfoProvider()
