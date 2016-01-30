@@ -15,8 +15,8 @@ type testDNSDeleter struct {
 	deleteSubdomainFunc func(domain, subdomain string, recordType string) error
 }
 
-func (deleter *testDNSDeleter) DeleteSubdomain(domain, subdomain string, recordType string) error {
-	return deleter.deleteSubdomainFunc(domain, subdomain, recordType)
+func (editor *testDNSDeleter) DeleteSubdomain(domain, subdomain string, recordType string) error {
+	return editor.deleteSubdomainFunc(domain, subdomain, recordType)
 }
 
 // If any of the given parameters is invalid DeleteSubdomain should respond with an error.
@@ -33,12 +33,12 @@ func Test_DeleteSubdomain_ParametersInvalid_ErrorIsReturned(t *testing.T) {
 		{" ", " ", "AAAA"},
 		{"example.com", "www", "AAAA"},
 	}
-	deleter := dnsimpleDeleter{}
+	editor := dnsEditor{}
 
 	for _, input := range inputs {
 
 		// act
-		err := deleter.DeleteSubdomain(input.domain, input.subdomain, input.recordType)
+		err := editor.DeleteSubdomain(input.domain, input.subdomain, input.recordType)
 
 		// assert
 		if err == nil {
@@ -63,12 +63,12 @@ func Test_DeleteSubdomain_ValidParameters_SubdomainNotFound_ErrorIsReturned(t *t
 
 	infoProviderFactory := testInfoProviderFactory{infoProvider}
 
-	deleter := dnsimpleDeleter{
+	editor := dnsEditor{
 		infoProviderFactory: infoProviderFactory,
 	}
 
 	// act
-	err := deleter.DeleteSubdomain(domain, subdomain, recordType)
+	err := editor.DeleteSubdomain(domain, subdomain, recordType)
 
 	// assert
 	if err == nil {
@@ -85,7 +85,7 @@ func Test_DeleteSubdomain_ValidParameters_SubdomainExists_DNSRecordDeleteFails_E
 
 	dnsClient := &testDNSClient{
 		destroyRecordFunc: func(domain string, id string) error {
-			return fmt.Errorf("Record update failed")
+			return fmt.Errorf("Record deletion failed")
 		},
 	}
 
@@ -98,18 +98,18 @@ func Test_DeleteSubdomain_ValidParameters_SubdomainExists_DNSRecordDeleteFails_E
 	dnsClientFactory := testDNSClientFactory{dnsClient}
 	infoProviderFactory := testInfoProviderFactory{infoProvider}
 
-	deleter := dnsimpleDeleter{
+	editor := dnsEditor{
 		clientFactory:       dnsClientFactory,
 		infoProviderFactory: infoProviderFactory,
 	}
 
 	// act
-	err := deleter.DeleteSubdomain(domain, subdomain, recordType)
+	err := editor.DeleteSubdomain(domain, subdomain, recordType)
 
 	// assert
 	if err == nil {
 		t.Fail()
-		t.Logf("DeleteSubdomain(%q, %q, %q) should return an error of the record update failed at the DNS client.", domain, subdomain, recordType)
+		t.Logf("DeleteSubdomain(%q, %q, %q) should return an error of the record deletion failed at the DNS client.", domain, subdomain, recordType)
 	}
 }
 
@@ -134,17 +134,17 @@ func Test_DeleteSubdomain_ValidParameters_SubdomainExists_DNSRecordDeleteSucceed
 	dnsClientFactory := testDNSClientFactory{dnsClient}
 	infoProviderFactory := testInfoProviderFactory{infoProvider}
 
-	deleter := dnsimpleDeleter{
+	editor := dnsEditor{
 		clientFactory:       dnsClientFactory,
 		infoProviderFactory: infoProviderFactory,
 	}
 
 	// act
-	err := deleter.DeleteSubdomain(domain, subdomain, recordType)
+	err := editor.DeleteSubdomain(domain, subdomain, recordType)
 
 	// assert
 	if err != nil {
 		t.Fail()
-		t.Logf("DeleteSubdomain(%q, %q, %q) should not return an error if the DNS record update succeeds.", domain, subdomain, recordType)
+		t.Logf("DeleteSubdomain(%q, %q, %q) should not return an error if the DNS record deletion succeeds.", domain, subdomain, recordType)
 	}
 }

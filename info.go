@@ -24,9 +24,9 @@ func (infoFactory dnsimpleInfoProviderFactory) CreateInfoProvider() dnsInfoProvi
 
 type dnsInfoProvider interface {
 	GetDomainNames() ([]string, error)
-	GetAllDNSRecords(domain string) ([]dnsimple.Record, error)
+	GetDomainRecords(domain string) ([]dnsimple.Record, error)
 	GetSubdomainRecord(domain, subdomain, recordType string) (dnsimple.Record, error)
-	GetSubdomainDNSRecords(domain, subdomain string) ([]dnsimple.Record, error)
+	GetSubdomainRecords(domain, subdomain string) ([]dnsimple.Record, error)
 }
 
 // dnsimpleInfoProvider returns DNS records from the DNSimple API.
@@ -55,8 +55,8 @@ func (infoProvider *dnsimpleInfoProvider) GetDomainNames() ([]string, error) {
 	return domainNames, nil
 }
 
-// GetAllDNSRecords returns all DNS records for the given domain.
-func (infoProvider *dnsimpleInfoProvider) GetAllDNSRecords(domain string) ([]dnsimple.Record, error) {
+// GetDomainRecords returns all DNS records for the given domain.
+func (infoProvider *dnsimpleInfoProvider) GetDomainRecords(domain string) ([]dnsimple.Record, error) {
 
 	return infoProvider.getDNSRecords(domain, func(record dnsimple.Record) bool {
 		return true
@@ -88,8 +88,8 @@ func (infoProvider *dnsimpleInfoProvider) GetSubdomainRecord(domain, subdomain, 
 	return records[0], nil
 }
 
-// GetSubdomainDNSRecords returns all DNS records for the given subdomain.
-func (infoProvider *dnsimpleInfoProvider) GetSubdomainDNSRecords(domain, subdomain string) ([]dnsimple.Record, error) {
+// GetSubdomainRecords returns all DNS records for the given subdomain.
+func (infoProvider *dnsimpleInfoProvider) GetSubdomainRecords(domain, subdomain string) ([]dnsimple.Record, error) {
 
 	return infoProvider.getDNSRecords(domain, func(record dnsimple.Record) bool {
 		return record.Name == subdomain
@@ -126,7 +126,7 @@ func (infoProvider *dnsimpleInfoProvider) getDNSRecords(domain string, includeIn
 // getClient returns a DNS client instance or an error if the creation of the client failed.
 func (infoProvider *dnsimpleInfoProvider) getClient() (dnsClient, error) {
 	if infoProvider.clientFactory == nil {
-		return nil, fmt.Errorf("No DNS client factory available.")
+		return nil, fmt.Errorf("No DNS client factory available")
 	}
 
 	client, err := infoProvider.clientFactory.CreateClient()

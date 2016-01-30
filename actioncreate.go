@@ -57,17 +57,17 @@ func (action createAction) Execute(arguments []string) (message, error) {
 
 	// domain
 	if *createDomain == "" {
-		return nil, fmt.Errorf("No domain supplied.")
+		return nil, fmt.Errorf("No domain supplied")
 	}
 
 	// subdomain
 	if *createSubdomain == "" {
-		return nil, fmt.Errorf("No subdomain supplied.")
+		return nil, fmt.Errorf("No subdomain supplied")
 	}
 
 	// subdomain
 	if *createSubdomain == "" {
-		return nil, fmt.Errorf("No subdomain supplied.")
+		return nil, fmt.Errorf("No subdomain supplied")
 	}
 
 	// TTL
@@ -83,7 +83,7 @@ func (action createAction) Execute(arguments []string) (message, error) {
 	}
 
 	if *createIP == "" {
-		return nil, fmt.Errorf("No IP address supplied.")
+		return nil, fmt.Errorf("No IP address supplied")
 	}
 
 	ip := net.ParseIP(*createIP)

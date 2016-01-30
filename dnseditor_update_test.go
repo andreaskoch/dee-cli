@@ -16,8 +16,8 @@ type testDNSUpdater struct {
 	updateSubdomainFunc func(domain, subdomain string, ip net.IP) error
 }
 
-func (updater *testDNSUpdater) UpdateSubdomain(domain, subdomain string, ip net.IP) error {
-	return updater.updateSubdomainFunc(domain, subdomain, ip)
+func (editor *testDNSUpdater) UpdateSubdomain(domain, subdomain string, ip net.IP) error {
+	return editor.updateSubdomainFunc(domain, subdomain, ip)
 }
 
 // If any of the given parameters is invalid UpdateSubdomain should respond with an error.
@@ -34,12 +34,12 @@ func Test_UpdateSubdomain_ParametersInvalid_ErrorIsReturned(t *testing.T) {
 		{" ", " ", net.ParseIP("::1")},
 		{"example.com", "www", nil},
 	}
-	updater := dnsimpleUpdater{}
+	editor := dnsEditor{}
 
 	for _, input := range inputs {
 
 		// act
-		err := updater.UpdateSubdomain(input.domain, input.subdomain, input.ip)
+		err := editor.UpdateSubdomain(input.domain, input.subdomain, input.ip)
 
 		// assert
 		if err == nil {
@@ -64,12 +64,12 @@ func Test_UpdateSubdomain_ValidParameters_SubdomainNotFound_ErrorIsReturned(t *t
 
 	infoProviderFactory := testInfoProviderFactory{infoProvider}
 
-	updater := dnsimpleUpdater{
+	editor := dnsEditor{
 		infoProviderFactory: infoProviderFactory,
 	}
 
 	// act
-	err := updater.UpdateSubdomain(domain, subdomain, ip)
+	err := editor.UpdateSubdomain(domain, subdomain, ip)
 
 	// assert
 	if err == nil {
@@ -99,13 +99,13 @@ func Test_UpdateSubdomain_ValidParameters_SubdomainExists_DNSRecordUpdateFails_E
 	dnsClientFactory := testDNSClientFactory{dnsClient}
 	infoProviderFactory := testInfoProviderFactory{infoProvider}
 
-	updater := dnsimpleUpdater{
+	editor := dnsEditor{
 		clientFactory:       dnsClientFactory,
 		infoProviderFactory: infoProviderFactory,
 	}
 
 	// act
-	err := updater.UpdateSubdomain(domain, subdomain, ip)
+	err := editor.UpdateSubdomain(domain, subdomain, ip)
 
 	// assert
 	if err == nil {
@@ -135,13 +135,13 @@ func Test_UpdateSubdomain_ValidParameters_SubdomainExists_DNSRecordUpdateSucceed
 	dnsClientFactory := testDNSClientFactory{dnsClient}
 	infoProviderFactory := testInfoProviderFactory{infoProvider}
 
-	updater := dnsimpleUpdater{
+	editor := dnsEditor{
 		clientFactory:       dnsClientFactory,
 		infoProviderFactory: infoProviderFactory,
 	}
 
 	// act
-	err := updater.UpdateSubdomain(domain, subdomain, ip)
+	err := editor.UpdateSubdomain(domain, subdomain, ip)
 
 	// assert
 	if err != nil {
@@ -179,13 +179,13 @@ func Test_UpdateSubdomain_ValidParameters_SubdomainExists_ExistingIPIsTheSame_Er
 	dnsClientFactory := testDNSClientFactory{dnsClient}
 	infoProviderFactory := testInfoProviderFactory{infoProvider}
 
-	updater := dnsimpleUpdater{
+	editor := dnsEditor{
 		clientFactory:       dnsClientFactory,
 		infoProviderFactory: infoProviderFactory,
 	}
 
 	// act
-	err := updater.UpdateSubdomain(domain, subdomain, ip)
+	err := editor.UpdateSubdomain(domain, subdomain, ip)
 
 	// assert
 	if err == nil {
@@ -244,11 +244,11 @@ func Test_UpdateSubdomain_ValidParameters_SubdomainExists_OnlyTheIPIsChangedOnTh
 	dnsClientFactory := testDNSClientFactory{dnsClient}
 	infoProviderFactory := testInfoProviderFactory{infoProvider}
 
-	updater := dnsimpleUpdater{
+	editor := dnsEditor{
 		clientFactory:       dnsClientFactory,
 		infoProviderFactory: infoProviderFactory,
 	}
 
 	// act
-	updater.UpdateSubdomain(domain, subdomain, ip)
+	editor.UpdateSubdomain(domain, subdomain, ip)
 }

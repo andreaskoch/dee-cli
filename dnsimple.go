@@ -64,22 +64,16 @@ func init() {
 	// create DNSimple info provider
 	dnsimpleInfoProviderFactory := &dnsimpleInfoProviderFactory{dnsClientFactory}
 
-	// create DNSimple domain creator
-	dnsimpleCreator := &dnsimpleCreator{dnsClientFactory, dnsimpleInfoProviderFactory}
-
-	// create DNSimple domain deleter
-	dnsimpleDeleter := &dnsimpleDeleter{dnsClientFactory, dnsimpleInfoProviderFactory}
-
-	// create DNSimple domain updater
-	dnsimpleUpdater := &dnsimpleUpdater{dnsClientFactory, dnsimpleInfoProviderFactory}
+	// create a DNS editor instance
+	dnsimpleEditor := &dnsEditor{dnsClientFactory, dnsimpleInfoProviderFactory}
 
 	actions = []action{
 		loginAction{credentialStore},
 		logoutAction{credentialStore},
-		createAction{dnsimpleCreator, os.Stdin},
 		listAction{dnsimpleInfoProviderFactory},
-		updateAction{dnsimpleUpdater, os.Stdin},
-		deleteAction{dnsimpleDeleter},
+		createAction{dnsimpleEditor, os.Stdin},
+		updateAction{dnsimpleEditor, os.Stdin},
+		deleteAction{dnsimpleEditor},
 	}
 
 	// override the help information printer

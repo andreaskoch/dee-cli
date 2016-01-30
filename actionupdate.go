@@ -22,8 +22,8 @@ var (
 )
 
 type updateAction struct {
-	domainUpdater updater
-	stdin         *os.File
+	addressRecordUpdater dnsRecordUpdater
+	stdin                *os.File
 }
 
 func (action updateAction) Name() string {
@@ -55,7 +55,7 @@ func (action updateAction) Execute(arguments []string) (message, error) {
 
 	// domain
 	if *updateDomain == "" {
-		return nil, fmt.Errorf("No domain supplied.")
+		return nil, fmt.Errorf("No domain supplied")
 	}
 
 	// take ip from stdin
@@ -66,7 +66,7 @@ func (action updateAction) Execute(arguments []string) (message, error) {
 	}
 
 	if *updateIP == "" {
-		return nil, fmt.Errorf("No IP address supplied.")
+		return nil, fmt.Errorf("No IP address supplied")
 	}
 
 	ip := net.ParseIP(*updateIP)
@@ -74,7 +74,7 @@ func (action updateAction) Execute(arguments []string) (message, error) {
 		return nil, fmt.Errorf("Cannot parse IP %q", ip)
 	}
 
-	updateError := action.domainUpdater.UpdateSubdomain(*updateDomain, *updateSubdomain, ip)
+	updateError := action.addressRecordUpdater.UpdateSubdomain(*updateDomain, *updateSubdomain, ip)
 	if updateError != nil {
 		return nil, fmt.Errorf("%s", updateError.Error())
 	}

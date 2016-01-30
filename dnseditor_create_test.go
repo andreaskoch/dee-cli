@@ -16,8 +16,8 @@ type testDNSCreator struct {
 	createSubdomainFunc func(domain, subdomain string, timeToLive int, ip net.IP) error
 }
 
-func (creator *testDNSCreator) CreateSubdomain(domain, subdomain string, timeToLive int, ip net.IP) error {
-	return creator.createSubdomainFunc(domain, subdomain, timeToLive, ip)
+func (editor *testDNSCreator) CreateSubdomain(domain, subdomain string, timeToLive int, ip net.IP) error {
+	return editor.createSubdomainFunc(domain, subdomain, timeToLive, ip)
 }
 
 // If any of the given parameters is invalid CreateSubdomain should respond with an error.
@@ -35,12 +35,12 @@ func Test_CreateSubdomain_ParametersInvalid_ErrorIsReturned(t *testing.T) {
 		{" ", " ", 600, net.ParseIP("::1")},
 		{"example.com", "www", 600, nil},
 	}
-	creator := dnsimpleCreator{}
+	editor := dnsEditor{}
 
 	for _, input := range inputs {
 
 		// act
-		err := creator.CreateSubdomain(input.domain, input.subdomain, input.ttl, input.ip)
+		err := editor.CreateSubdomain(input.domain, input.subdomain, input.ttl, input.ip)
 
 		// assert
 		if err == nil {
@@ -66,12 +66,12 @@ func Test_CreateSubdomain_ValidParameters_SubdomainNotFound_ErrorIsReturned(t *t
 
 	infoProviderFactory := testInfoProviderFactory{infoProvider}
 
-	creator := dnsimpleCreator{
+	editor := dnsEditor{
 		infoProviderFactory: infoProviderFactory,
 	}
 
 	// act
-	err := creator.CreateSubdomain(domain, subdomain, ttl, ip)
+	err := editor.CreateSubdomain(domain, subdomain, ttl, ip)
 
 	// assert
 	if err == nil {
@@ -89,7 +89,7 @@ func Test_CreateSubdomain_ValidParameters_SubdomainExists_DNSRecordCreationFails
 
 	dnsClient := &testDNSClient{
 		createRecordFunc: func(domain string, opts *dnsimple.ChangeRecord) (string, error) {
-			return "", fmt.Errorf("Record update failed")
+			return "", fmt.Errorf("Failed to create record")
 		},
 	}
 
@@ -102,18 +102,18 @@ func Test_CreateSubdomain_ValidParameters_SubdomainExists_DNSRecordCreationFails
 	dnsClientFactory := testDNSClientFactory{dnsClient}
 	infoProviderFactory := testInfoProviderFactory{infoProvider}
 
-	creator := dnsimpleCreator{
+	editor := dnsEditor{
 		clientFactory:       dnsClientFactory,
 		infoProviderFactory: infoProviderFactory,
 	}
 
 	// act
-	err := creator.CreateSubdomain(domain, subdomain, ttl, ip)
+	err := editor.CreateSubdomain(domain, subdomain, ttl, ip)
 
 	// assert
 	if err == nil {
 		t.Fail()
-		t.Logf("CreateSubdomain(%q, %q, %q, %q) should return an error of the record update failed at the DNS client.", domain, subdomain, ip, ttl)
+		t.Logf("CreateSubdomain(%q, %q, %q, %q) should return an error of the record creation failed at the DNS client.", domain, subdomain, ip, ttl)
 	}
 }
 
@@ -139,17 +139,17 @@ func Test_CreateSubdomain_ValidParameters_SubdomainExists_DNSRecordCreationSucce
 	dnsClientFactory := testDNSClientFactory{dnsClient}
 	infoProviderFactory := testInfoProviderFactory{infoProvider}
 
-	creator := dnsimpleCreator{
+	editor := dnsEditor{
 		clientFactory:       dnsClientFactory,
 		infoProviderFactory: infoProviderFactory,
 	}
 
 	// act
-	err := creator.CreateSubdomain(domain, subdomain, ttl, ip)
+	err := editor.CreateSubdomain(domain, subdomain, ttl, ip)
 
 	// assert
 	if err != nil {
 		t.Fail()
-		t.Logf("CreateSubdomain(%q, %q, %q, %q) should not return an error if the DNS record update succeeds.", domain, subdomain, ttl, ip)
+		t.Logf("CreateSubdomain(%q, %q, %q, %q) should not return an error if the DNS record creation succeeded.", domain, subdomain, ttl, ip)
 	}
 }
