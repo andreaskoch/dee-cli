@@ -64,12 +64,16 @@ func init() {
 	// create DNSimple info provider
 	dnsimpleInfoProviderFactory := &dnsimpleInfoProviderFactory{dnsClientFactory}
 
+	// create DNSimple domain creator
+	dnsimpleCreator := &dnsimpleCreator{dnsClientFactory, dnsimpleInfoProviderFactory}
+
 	// create DNSimple domain updater
 	dnsimpleUpdater := &dnsimpleUpdater{dnsClientFactory, dnsimpleInfoProviderFactory}
 
 	actions = []action{
 		loginAction{credentialStore},
 		logoutAction{credentialStore},
+		createAction{dnsimpleCreator, os.Stdin},
 		updateAction{dnsimpleUpdater, os.Stdin},
 		listAction{dnsimpleInfoProviderFactory},
 	}
@@ -81,7 +85,7 @@ func init() {
 	usagePrinter := newUsagePrinter(executableName, version(), actions)
 
 	flag.Usage = func() {
-		usagePrinter.PrintUsageInformation(os.Stderr)
+		usagePrinter.PrintUsageInformation(os.Stdout)
 	}
 
 }

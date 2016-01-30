@@ -72,6 +72,43 @@ List all DNS records for a given subdomain:
 dnsimple-cli list -domain example.com -subdomain www
 ```
 
+### Action: `create`
+
+Create an address DNS record.
+
+**Arguments**:
+
+- `-domain`: A domain name (required)
+- `-subdomain`: The subdomain name (required)
+- `-ip`: An IPv4 or IPv6 address (required)
+- `-ttl`: The time to live (TTL) for the DNS record in seconds (default: 600)
+
+**Example**:
+
+Create an `AAAA` record for the subdomain `www`:
+
+```bash
+dnsimple-cli create -domain example.com -subdomain www -ip 2001:0db8:0000:0042:0000:8a2e:0370:7334
+```
+
+Create an `AAAA` record for the subdomain `www` with TTL of 1 minute:
+
+```bash
+dnsimple-cli create -domain example.com -subdomain www -ip 2001:0db8:0000:0042:0000:8a2e:0370:7334 -ttl 60
+```
+
+Create an `A` record for the subdomain `www`:
+
+```bash
+dnsimple-cli create -domain example.com -subdomain www -ip 10.2.1.3
+```
+
+The `-ip` parameter can also be passed via Stdin:
+
+```bash
+echo "2001:0db8:0000:0042:0000:8a2e:0370:7334" | dnsimple-cli create -domain example.com -subdomain www -ttl 3600
+```
+
 ### Action: `update`
 
 Update the DNS record for a given sub domain
@@ -90,7 +127,7 @@ Set the `AAAA` record of `www.example.com` to the given IP address:
 dnsimple-cli update -domain example.com -subdomain www -ip 2001:0db8:0000:0042:0000:8a2e:0370:7334
 ```
 
-The IP address can also be passed in via Stdin:
+The `-ip` address parameter can also be passed in via Stdin:
 
 ```bash
 echo "2001:0db8:0000:0042:0000:8a2e:0370:7334" | dnsimple-cli update -domain example.com -subdomain www
@@ -130,7 +167,6 @@ go install
 ## Roadmap
 
 - Actions
-  - `create`: Create a subdomain record
   - `delete`: Delete a given subdomain record
 
 ## Contribute

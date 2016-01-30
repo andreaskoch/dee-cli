@@ -59,7 +59,7 @@ func Test_updateAction_Usage_ResultIsNotEmpty(t *testing.T) {
 
 }
 
-// update should return an error if the arguments are invalid.
+// updateAction.Execute should return an error if the arguments are invalid.
 func Test_updateAction_InvalidArguments_ErrorIsReturned(t *testing.T) {
 	// arrange
 	validArgumentsSet := [][]string{
@@ -70,6 +70,30 @@ func Test_updateAction_InvalidArguments_ErrorIsReturned(t *testing.T) {
 			"www",
 			"-ip",
 			"127.0.0.1",
+		},
+		{
+			"-domainname",
+			"example.com",
+			"-subdomain",
+			"www",
+			"-ip",
+			"",
+		},
+		{
+			"-domainname",
+			"example.com",
+			"-subdomain",
+			"www",
+			"-ip",
+			"dasjdksalkdjsakljdklsa",
+		},
+		{
+			"-domainname",
+			"example.com",
+			"-subdomain",
+			"www",
+			"-ip",
+			"4312908321098392108309",
 		},
 		{
 			"-domain",
@@ -131,7 +155,7 @@ func Test_updateAction_InvalidArguments_ErrorIsReturned(t *testing.T) {
 	}
 }
 
-// update should return an error if the arguments are valid but empty.
+// updateAction.Execute should return an error if the arguments are valid but empty.
 func Test_updateAction_ValidArgumentsButEmpty_ErrorIsReturned(t *testing.T) {
 	// arrange
 	validArgumentsSet := [][]string{
@@ -140,14 +164,6 @@ func Test_updateAction_ValidArgumentsButEmpty_ErrorIsReturned(t *testing.T) {
 			"",
 			"-subdomain",
 			"www",
-			"-ip",
-			"127.0.0.1",
-		},
-		{
-			"-domain",
-			"example.com",
-			"-subdomain",
-			"",
 			"-ip",
 			"127.0.0.1",
 		},
@@ -182,7 +198,46 @@ func Test_updateAction_ValidArgumentsButEmpty_ErrorIsReturned(t *testing.T) {
 	}
 }
 
-// update should not return an error if the arguments are valid and the subdomain update succeeds.
+// updateAction.Execute should return an error if the given IP address is invalid.
+func Test_updateAction_IPAddressIsInvalid_ErrorIsReturned(t *testing.T) {
+	// arrange
+	invalidIPs := []string{
+		"127.0",
+		"127.0.0.1.1",
+		"255.255.255.255.255",
+		"10000:21323:31231",
+	}
+
+	dnsUpdater := &testDNSUpdater{
+		updateSubdomainFunc: func(domain, subdomain string, ip net.IP) error {
+			return nil
+		},
+	}
+
+	updateAction := updateAction{dnsUpdater, nil}
+
+	for _, invalidIP := range invalidIPs {
+
+		// act
+		arguments := []string{
+			"-domain",
+			"example.com",
+			"-subdomain",
+			"www",
+			"-ip",
+			invalidIP,
+		}
+		_, err := updateAction.Execute(arguments)
+
+		// assert
+		if err == nil {
+			t.Fail()
+			t.Logf("updateAction.Execute(%q) should return an error because the given IP address (%q) is invalid", arguments, invalidIP)
+		}
+	}
+}
+
+// updateAction.Execute should not return an error if the arguments are valid and the subdomain updateAction.Execute succeeds.
 func Test_updateAction_ValidArguments_NoErrorIsReturned(t *testing.T) {
 	// arrange
 	validArgumentsSet := [][]string{
@@ -249,12 +304,12 @@ func Test_updateAction_ValidArguments_NoErrorIsReturned(t *testing.T) {
 		// assert
 		if err != nil {
 			t.Fail()
-			t.Logf("update(dnsUpdater, %q) should not return an error: %q", arguments, err.Error())
+			t.Logf("updateAction.Execute(dnsUpdater, %q) should not return an error: %q", arguments, err.Error())
 		}
 	}
 }
 
-// update should return an error if the DNS Updater responds with one.
+// updateAction.Execute should return an error if the DNS Updater responds with one.
 func Test_updateAction_ValidArguments_DNSUpdaterRespondsWithError_ErrorIsReturned(t *testing.T) {
 	// arrange
 	arguments := []string{
@@ -280,11 +335,11 @@ func Test_updateAction_ValidArguments_DNSUpdaterRespondsWithError_ErrorIsReturne
 	// assert
 	if err == nil {
 		t.Fail()
-		t.Logf("update(dnsUpdater, %q) should return an error because the DNS updater returned one.", arguments)
+		t.Logf("updateAction.Execute(dnsUpdater, %q) should return an error because the DNS updater returned one.", arguments)
 	}
 }
 
-// update should return a success message if the DNS updater succeeds.
+// updateAction.Execute should return a success message if the DNS updater succeeds.
 func Test_updateAction_ValidArguments_DNSUpdaterSucceeds_SuccessMessageIsReturned(t *testing.T) {
 	// arrange
 	arguments := []string{
@@ -310,11 +365,11 @@ func Test_updateAction_ValidArguments_DNSUpdaterSucceeds_SuccessMessageIsReturne
 	// assert
 	if response == nil {
 		t.Fail()
-		t.Logf("update(dnsUpdater, %q) should respond with a success message if the DNS updater succeeds.", arguments)
+		t.Logf("updateAction.Execute(dnsUpdater, %q) should respond with a success message if the DNS updater succeeds.", arguments)
 	}
 }
 
-// update should return a success message that contains the subdomain, domain and ip.
+// updateAction.Execute should return a success message that contains the subdomain, domain and ip.
 func Test_updateAction_ValidArguments_DNSUpdaterSucceeds_SuccessMessageContainsTheSubdomainAndNewIP(t *testing.T) {
 	// arrange
 	arguments := []string{
@@ -344,6 +399,6 @@ func Test_updateAction_ValidArguments_DNSUpdaterSucceeds_SuccessMessageContainsT
 
 	if !containsIP || !containsSubdomain || !containsDomain {
 		t.Fail()
-		t.Logf("update(dnsUpdater, %q) should respond with a success message that contains the domain, subdomain and ip but responded with %q instead.", arguments, response.Text())
+		t.Logf("updateAction.Execute(dnsUpdater, %q) should respond with a success message that contains the domain, subdomain and ip but responded with %q instead.", arguments, response.Text())
 	}
 }

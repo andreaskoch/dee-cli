@@ -25,7 +25,7 @@ func (action logoutAction) Description() string {
 }
 
 func (action logoutAction) Usage() string {
-	return "  <no options required>"
+	return "  <no options required>\n"
 }
 
 // Execute deletes the API credentials.

@@ -21,7 +21,7 @@ type dnsimpleUpdater struct {
 	infoProviderFactory dnsInfoProviderFactory
 }
 
-// updateSubdomain updates the IP address of the given domain/subdomain
+// UpdateSubdomain updates the IP address of the given domain/subdomain.
 func (updater *dnsimpleUpdater) UpdateSubdomain(domain, subdomain string, ip net.IP) error {
 
 	// validate parameters
@@ -51,7 +51,7 @@ func (updater *dnsimpleUpdater) UpdateSubdomain(domain, subdomain string, ip net
 	recordType := getDNSRecordTypeByIP(ip)
 	subdomainRecord, err := infoClient.GetSubdomainRecord(domain, subdomain, recordType)
 	if err != nil {
-		return err
+		return fmt.Errorf("Unable to locate DNS record %q.", subdomain)
 	}
 
 	// check if an update is necessary

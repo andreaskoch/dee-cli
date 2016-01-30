@@ -15,10 +15,10 @@ import (
 var (
 	actionNameUpdate = "update"
 
-	updateSubdomainArguments = flag.NewFlagSet(actionNameUpdate, flag.ContinueOnError)
-	updateDomain             = updateSubdomainArguments.String("domain", "", "Domain (e.g. example.com")
-	updateSubdomain          = updateSubdomainArguments.String("subdomain", "", "Subdomain (e.g. www)")
-	updateIP                 = updateSubdomainArguments.String("ip", "", "IP address (e.g. 127.0.0.1, ::1)")
+	updateAddressRecordArguments = flag.NewFlagSet(actionNameUpdate, flag.ContinueOnError)
+	updateDomain                 = updateAddressRecordArguments.String("domain", "", "Domain (e.g. example.com")
+	updateSubdomain              = updateAddressRecordArguments.String("subdomain", "", "Subdomain (e.g. www)")
+	updateIP                     = updateAddressRecordArguments.String("ip", "", "IP address (e.g. ::1, 127.0.0.1)")
 )
 
 type updateAction struct {
@@ -31,13 +31,13 @@ func (action updateAction) Name() string {
 }
 
 func (action updateAction) Description() string {
-	return "Update the DNS record for a given sub domain"
+	return "Update the address record for a given sub domain"
 }
 
 func (action updateAction) Usage() string {
 	buf := new(bytes.Buffer)
-	updateSubdomainArguments.SetOutput(buf)
-	updateSubdomainArguments.PrintDefaults()
+	updateAddressRecordArguments.SetOutput(buf)
+	updateAddressRecordArguments.PrintDefaults()
 	return buf.String()
 }
 
@@ -46,18 +46,16 @@ func (action updateAction) Usage() string {
 func (action updateAction) Execute(arguments []string) (message, error) {
 
 	// parse the arguments
-	if parseError := updateSubdomainArguments.Parse(arguments); parseError != nil {
+	*updateDomain = ""
+	*updateSubdomain = ""
+	*updateIP = ""
+	if parseError := updateAddressRecordArguments.Parse(arguments); parseError != nil {
 		return nil, parseError
 	}
 
 	// domain
 	if *updateDomain == "" {
 		return nil, fmt.Errorf("No domain supplied.")
-	}
-
-	// subdomain
-	if *updateSubdomain == "" {
-		return nil, fmt.Errorf("No subdomain supplied.")
 	}
 
 	// take ip from stdin
@@ -72,6 +70,10 @@ func (action updateAction) Execute(arguments []string) (message, error) {
 	}
 
 	ip := net.ParseIP(*updateIP)
+	if ip == nil {
+		return nil, fmt.Errorf("Cannot parse IP %q", ip)
+	}
+
 	updateError := action.domainUpdater.UpdateSubdomain(*updateDomain, *updateSubdomain, ip)
 	if updateError != nil {
 		return nil, fmt.Errorf("%s", updateError.Error())
