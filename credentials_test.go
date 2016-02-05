@@ -5,6 +5,7 @@
 package main
 
 import (
+	"github.com/andreaskoch/dee-ns"
 	"github.com/spf13/afero"
 	"os"
 	"path"
@@ -12,16 +13,16 @@ import (
 )
 
 type testCredentialsStore struct {
-	saveFunc   func(credentials apiCredentials) error
-	getFunc    func() (apiCredentials, error)
+	saveFunc   func(credentials deens.APICredentials) error
+	getFunc    func() (deens.APICredentials, error)
 	deleteFunc func() error
 }
 
-func (credStore testCredentialsStore) SaveCredentials(credentials apiCredentials) error {
+func (credStore testCredentialsStore) SaveCredentials(credentials deens.APICredentials) error {
 	return credStore.saveFunc(credentials)
 }
 
-func (credStore testCredentialsStore) GetCredentials() (apiCredentials, error) {
+func (credStore testCredentialsStore) GetCredentials() (deens.APICredentials, error) {
 	return credStore.getFunc()
 }
 
@@ -65,12 +66,12 @@ func Test_newAPICredentials_ValidEmailAndToken_NoErrorIsReturned(t *testing.T) {
 
 	// act
 	for _, input := range inputs {
-		_, err := newAPICredentials(input.email, input.token)
+		_, err := deens.NewAPICredentials(input.email, input.token)
 
 		// assert
 		if err != nil {
 			t.Fail()
-			t.Logf("newAPICredentials(%q, %q) should not return an error because the input is valid. But it returned: %s", input.email, input.token, err.Error())
+			t.Logf("deens.NewAPICredentials(%q, %q) should not return an error because the input is valid. But it returned: %s", input.email, input.token, err.Error())
 		}
 	}
 }
@@ -89,12 +90,12 @@ func Test_newAPICredentials_InvalidValidEmailOrToken_ErrorIsReturned(t *testing.
 
 	// act
 	for _, input := range inputs {
-		_, err := newAPICredentials(input.email, input.token)
+		_, err := deens.NewAPICredentials(input.email, input.token)
 
 		// assert
 		if err == nil {
 			t.Fail()
-			t.Logf("newAPICredentials(%q, %q) should return an error because the given input is invalid.", input.email, input.token)
+			t.Logf("deens.NewAPICredentials(%q, %q) should return an error because the given input is invalid.", input.email, input.token)
 		}
 	}
 }
@@ -102,13 +103,13 @@ func Test_newAPICredentials_InvalidValidEmailOrToken_ErrorIsReturned(t *testing.
 func Test_filesystemCredentialStore_WithoutFilesystem_SaveCredentials_ErrorIsReturned(t *testing.T) {
 
 	// arrange
-	credentialFilePath := "/home/user/.dnsimple-cli/credentials.json"
+	credentialFilePath := "/home/user/.dee/credentials.json"
 	credentialStore := filesystemCredentialStore{
 		filePath: credentialFilePath,
 	}
 
 	// act
-	err := credentialStore.SaveCredentials(apiCredentials{"john@example.com", "123456"})
+	err := credentialStore.SaveCredentials(deens.APICredentials{"john@example.com", "123456"})
 
 	// assert
 	if err == nil {
@@ -126,7 +127,7 @@ func Test_filesystemCredentialStore_WithoutFilePath_SaveCredentials_ErrorIsRetur
 	}
 
 	// act
-	err := credentialStore.SaveCredentials(apiCredentials{"john@example.com", "123456"})
+	err := credentialStore.SaveCredentials(deens.APICredentials{"john@example.com", "123456"})
 
 	// assert
 	if err == nil {
@@ -139,11 +140,11 @@ func Test_filesystemCredentialStore_SaveCredentials_CredentialsAreValid_NoErrorI
 
 	// arrange
 	fs := afero.NewMemMapFs()
-	credentialFilePath := "/home/user/.dnsimple-cli/credentials.json"
+	credentialFilePath := "/home/user/.dee/credentials.json"
 	credentialStore := filesystemCredentialStore{fs, credentialFilePath}
 
 	// act
-	err := credentialStore.SaveCredentials(apiCredentials{"john@example.com", "123456"})
+	err := credentialStore.SaveCredentials(deens.APICredentials{"john@example.com", "123456"})
 
 	// assert
 	if err != nil {
@@ -156,11 +157,11 @@ func Test_filesystemCredentialStore_SaveCredentials_CredentialsAreValid_JSONIsWr
 
 	// arrange
 	fs := afero.NewMemMapFs()
-	credentialFilePath := "/home/user/.dnsimple-cli/credentials.json"
+	credentialFilePath := "/home/user/.dee/credentials.json"
 	credentialStore := filesystemCredentialStore{fs, credentialFilePath}
 
 	// act
-	credentialStore.SaveCredentials(apiCredentials{"john@example.com", "123456"})
+	credentialStore.SaveCredentials(deens.APICredentials{"john@example.com", "123456"})
 
 	// assert
 	expectedResult := `{"Email":"john@example.com","Token":"123456"}`
@@ -175,7 +176,7 @@ func Test_filesystemCredentialStore_SaveCredentials_FileExists_FileIsOverridden(
 
 	// arrange
 	fs := afero.NewMemMapFs()
-	credentialFilePath := "/home/user/.dnsimple-cli/credentials.json"
+	credentialFilePath := "/home/user/.dee/credentials.json"
 
 	// create the initial file
 	f1, _ := fs.Create(credentialFilePath)
@@ -185,7 +186,7 @@ func Test_filesystemCredentialStore_SaveCredentials_FileExists_FileIsOverridden(
 	credentialStore := filesystemCredentialStore{fs, credentialFilePath}
 
 	// act
-	credentialStore.SaveCredentials(apiCredentials{"new@example.com", "123456"})
+	credentialStore.SaveCredentials(deens.APICredentials{"new@example.com", "123456"})
 
 	// assert
 	expectedResult := `{"Email":"new@example.com","Token":"123456"}`
@@ -200,7 +201,7 @@ func Test_filesystemCredentialStore_GetCredentials_SavedCredentialsAreValid_Cred
 
 	// arrange
 	fs := afero.NewMemMapFs()
-	credentialFilePath := "/home/user/.dnsimple-cli/credentials.json"
+	credentialFilePath := "/home/user/.dee/credentials.json"
 
 	// create the initial file
 	f1, _ := fs.Create(credentialFilePath)
@@ -228,7 +229,7 @@ func Test_filesystemCredentialStore_GetCredentials_SavedCredentialsAreEmpty_Erro
 
 	// arrange
 	fs := afero.NewMemMapFs()
-	credentialFilePath := "/home/user/.dnsimple-cli/credentials.json"
+	credentialFilePath := "/home/user/.dee/credentials.json"
 
 	// create the initial file
 	f1, _ := fs.Create(credentialFilePath)
@@ -251,7 +252,7 @@ func Test_filesystemCredentialStore_GetCredentials_JSONIsInvalid_ErrorIsReturned
 
 	// arrange
 	fs := afero.NewMemMapFs()
-	credentialFilePath := "/home/user/.dnsimple-cli/credentials.json"
+	credentialFilePath := "/home/user/.dee/credentials.json"
 
 	// create the initial file
 	f1, _ := fs.Create(credentialFilePath)
@@ -289,7 +290,7 @@ func Test_filesystemCredentialStore_WithoutSourceFile_DeleteCredentials_credenti
 
 	// arrange
 	fs := afero.NewMemMapFs()
-	credentialFilePath := "/home/user/.dnsimple-cli/credentials.json"
+	credentialFilePath := "/home/user/.dee/credentials.json"
 	credentialStore := filesystemCredentialStore{fs, credentialFilePath}
 
 	// act
@@ -306,7 +307,7 @@ func Test_filesystemCredentialStore_SourceFileExists_DeleteCredentials_NoErrorIs
 
 	// arrange
 	fs := afero.NewMemMapFs()
-	credentialFilePath := "/home/user/.dnsimple-cli/credentials.json"
+	credentialFilePath := "/home/user/.dee/credentials.json"
 
 	// create the initial file
 	f1, _ := fs.Create(credentialFilePath)
@@ -328,7 +329,7 @@ func Test_filesystemCredentialStore_SourceFileExists_DeleteCredentials_FileIsDel
 
 	// arrange
 	fs := afero.NewMemMapFs()
-	credentialFilePath := "/home/user/.dnsimple-cli/credentials.json"
+	credentialFilePath := "/home/user/.dee/credentials.json"
 
 	// create the initial file
 	f1, _ := fs.Create(credentialFilePath)

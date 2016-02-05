@@ -134,13 +134,15 @@ func Test_updateAction_InvalidArguments_ErrorIsReturned(t *testing.T) {
 		},
 	}
 
-	dnsUpdater := &testDNSUpdater{
+	dnsUpdater := &testDNSEditor{
 		updateSubdomainFunc: func(domain, subdomain string, ip net.IP) error {
 			return nil
 		},
 	}
 
-	updateAction := updateAction{dnsUpdater, nil}
+	editorFactory := testDNSEditorFactory{dnsUpdater, nil}
+
+	updateAction := updateAction{editorFactory, nil}
 
 	for _, arguments := range validArgumentsSet {
 
@@ -177,13 +179,15 @@ func Test_updateAction_ValidArgumentsButEmpty_ErrorIsReturned(t *testing.T) {
 		},
 	}
 
-	dnsUpdater := &testDNSUpdater{
+	dnsUpdater := &testDNSEditor{
 		updateSubdomainFunc: func(domain, subdomain string, ip net.IP) error {
 			return nil
 		},
 	}
 
-	updateAction := updateAction{dnsUpdater, nil}
+	editorFactory := testDNSEditorFactory{dnsUpdater, nil}
+
+	updateAction := updateAction{editorFactory, nil}
 
 	for _, arguments := range validArgumentsSet {
 
@@ -208,13 +212,15 @@ func Test_updateAction_IPAddressIsInvalid_ErrorIsReturned(t *testing.T) {
 		"10000:21323:31231",
 	}
 
-	dnsUpdater := &testDNSUpdater{
+	dnsUpdater := &testDNSEditor{
 		updateSubdomainFunc: func(domain, subdomain string, ip net.IP) error {
 			return nil
 		},
 	}
 
-	updateAction := updateAction{dnsUpdater, nil}
+	editorFactory := testDNSEditorFactory{dnsUpdater, nil}
+
+	updateAction := updateAction{editorFactory, nil}
 
 	for _, invalidIP := range invalidIPs {
 
@@ -288,13 +294,15 @@ func Test_updateAction_ValidArguments_NoErrorIsReturned(t *testing.T) {
 		},
 	}
 
-	dnsUpdater := &testDNSUpdater{
+	dnsUpdater := &testDNSEditor{
 		updateSubdomainFunc: func(domain, subdomain string, ip net.IP) error {
 			return nil
 		},
 	}
 
-	updateAction := updateAction{dnsUpdater, nil}
+	editorFactory := testDNSEditorFactory{dnsUpdater, nil}
+
+	updateAction := updateAction{editorFactory, nil}
 
 	for _, arguments := range validArgumentsSet {
 
@@ -304,7 +312,7 @@ func Test_updateAction_ValidArguments_NoErrorIsReturned(t *testing.T) {
 		// assert
 		if err != nil {
 			t.Fail()
-			t.Logf("updateAction.Execute(dnsUpdater, %q) should not return an error: %q", arguments, err.Error())
+			t.Logf("updateAction.Execute(%q) should not return an error: %q", arguments, err.Error())
 		}
 	}
 }
@@ -321,13 +329,15 @@ func Test_updateAction_ValidArguments_DNSUpdaterRespondsWithError_ErrorIsReturne
 		"2001:0db8:0000:0042:0000:8a2e:0370:7334",
 	}
 
-	dnsUpdater := &testDNSUpdater{
+	dnsUpdater := &testDNSEditor{
 		updateSubdomainFunc: func(domain, subdomain string, ip net.IP) error {
 			return fmt.Errorf("DNS Record Update failed")
 		},
 	}
 
-	updateAction := updateAction{dnsUpdater, nil}
+	editorFactory := testDNSEditorFactory{dnsUpdater, nil}
+
+	updateAction := updateAction{editorFactory, nil}
 
 	// act
 	_, err := updateAction.Execute(arguments)
@@ -335,7 +345,7 @@ func Test_updateAction_ValidArguments_DNSUpdaterRespondsWithError_ErrorIsReturne
 	// assert
 	if err == nil {
 		t.Fail()
-		t.Logf("updateAction.Execute(dnsUpdater, %q) should return an error because the DNS updater returned one.", arguments)
+		t.Logf("updateAction.Execute(%q) should return an error because the DNS updater returned one.", arguments)
 	}
 }
 
@@ -351,13 +361,15 @@ func Test_updateAction_ValidArguments_DNSUpdaterSucceeds_SuccessMessageIsReturne
 		"2001:0db8:0000:0042:0000:8a2e:0370:7334",
 	}
 
-	dnsUpdater := &testDNSUpdater{
+	dnsUpdater := &testDNSEditor{
 		updateSubdomainFunc: func(domain, subdomain string, ip net.IP) error {
 			return nil
 		},
 	}
 
-	updateAction := updateAction{dnsUpdater, nil}
+	editorFactory := testDNSEditorFactory{dnsUpdater, nil}
+
+	updateAction := updateAction{editorFactory, nil}
 
 	// act
 	response, _ := updateAction.Execute(arguments)
@@ -365,7 +377,32 @@ func Test_updateAction_ValidArguments_DNSUpdaterSucceeds_SuccessMessageIsReturne
 	// assert
 	if response == nil {
 		t.Fail()
-		t.Logf("updateAction.Execute(dnsUpdater, %q) should respond with a success message if the DNS updater succeeds.", arguments)
+		t.Logf("updateAction.Execute(%q) should respond with a success message if the DNS updater succeeds.", arguments)
+	}
+}
+
+// updateAction.Execute should return an error if the DNS editor factory returns an error.
+func Test_updateAction_ValidArguments_DNSEditorCreationFails_ErrorIsReturned(t *testing.T) {
+	// arrange
+	arguments := []string{
+		"-domain",
+		"example.com",
+		"-subdomain",
+		"www",
+		"-ip",
+		"2001:db8:0:42:0:8a2e:370:7334",
+	}
+
+	editorFactory := testDNSEditorFactory{nil, fmt.Errorf("Unable to create DNS Editor")}
+	updateAction := updateAction{editorFactory, nil}
+
+	// act
+	_, err := updateAction.Execute(arguments)
+
+	// assert
+	if err == nil {
+		t.Fail()
+		t.Logf("createAction.Execute(%q) should return an error if the DNS editor factory returned an error.", arguments)
 	}
 }
 
@@ -381,13 +418,15 @@ func Test_updateAction_ValidArguments_DNSUpdaterSucceeds_SuccessMessageContainsT
 		"2001:db8:0:42:0:8a2e:370:7334",
 	}
 
-	dnsUpdater := &testDNSUpdater{
+	dnsUpdater := &testDNSEditor{
 		updateSubdomainFunc: func(domain, subdomain string, ip net.IP) error {
 			return nil
 		},
 	}
 
-	updateAction := updateAction{dnsUpdater, nil}
+	editorFactory := testDNSEditorFactory{dnsUpdater, nil}
+
+	updateAction := updateAction{editorFactory, nil}
 
 	// act
 	response, _ := updateAction.Execute(arguments)
@@ -399,6 +438,6 @@ func Test_updateAction_ValidArguments_DNSUpdaterSucceeds_SuccessMessageContainsT
 
 	if !containsIP || !containsSubdomain || !containsDomain {
 		t.Fail()
-		t.Logf("updateAction.Execute(dnsUpdater, %q) should respond with a success message that contains the domain, subdomain and ip but responded with %q instead.", arguments, response.Text())
+		t.Logf("updateAction.Execute(%q) should respond with a success message that contains the domain, subdomain and ip but responded with %q instead.", arguments, response.Text())
 	}
 }

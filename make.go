@@ -4,7 +4,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// This program builds dnsimple-cli.
+// This program builds dee.
 //
 // $ go run make.go -install
 //
@@ -26,7 +26,7 @@ import (
 )
 
 // ProjectName contains the name of the project
-const ProjectName = "dnsimple-cli"
+const ProjectName = "dee"
 
 // GOPATH environment variable name.
 const GOPATH_ENVIRONMENT_VARIABLE = "GOPATH"

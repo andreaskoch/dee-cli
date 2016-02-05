@@ -25,7 +25,7 @@ func Test_PrintUsageInformation_ResultIsNotEmpty(t *testing.T) {
 			executeMessage: "success",
 		},
 	}
-	usagePrinter := newUsagePrinter("dnsimple-cli", "v0.1.0", actions)
+	usagePrinter := newUsagePrinter("dee", "v0.1.0", actions)
 
 	// act
 	buf := new(bytes.Buffer)

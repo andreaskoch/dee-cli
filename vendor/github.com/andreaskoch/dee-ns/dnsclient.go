@@ -2,33 +2,15 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main
+package deens
 
 import (
 	"fmt"
 	"github.com/pearkes/dnsimple"
 )
 
-// dnsClientFactory provides the ability to create DNS clients.
-type dnsClientFactory interface {
-	// CreateClient create a new dnsClient client instance.
-	CreateClient() (dnsClient, error)
-}
-
-// dnsimpleClientFactory creates DNSimple clients.
-type dnsimpleClientFactory struct {
-	credentialStore credentialStore
-}
-
-// CreateClient create a new DNSimple client instance.
-func (clientFactory dnsimpleClientFactory) CreateClient() (dnsClient, error) {
-	// get the credentials
-	credentials, credentialError := clientFactory.credentialStore.GetCredentials()
-	if credentialError != nil {
-		return nil, fmt.Errorf("%s", credentialError.Error())
-	}
-
-	// create a DNSimple client
+// NewDNSClient creates a new DNS client instance for the given credentials.
+func NewDNSClient(credentials APICredentials) (DNSClient, error) {
 	dnsimpleClient, dnsimpleClientError := dnsimple.NewClient(credentials.Email, credentials.Token)
 	if dnsimpleClientError != nil {
 		return nil, fmt.Errorf("Unable to create DNSimple client. Error: %s", dnsimpleClientError.Error())
@@ -37,11 +19,20 @@ func (clientFactory dnsimpleClientFactory) CreateClient() (dnsClient, error) {
 	return dnsimpleClient, nil
 }
 
-// dnsClient provides functions for updating DNS records.
-type dnsClient interface {
+// DNSClient provides functions for updating DNS records.
+type DNSClient interface {
+	// UpdateRecord update the DNS record with the given id.
 	UpdateRecord(domain string, id string, opts *dnsimple.ChangeRecord) (string, error)
+
+	// GetRecords returns all DNS records for the given domain.
 	GetRecords(domain string) ([]dnsimple.Record, error)
+
+	// GetDomains returns a list of domain.
 	GetDomains() ([]dnsimple.Domain, error)
+
+	// CreateRecord creates a new DNS record for the given domain.
 	CreateRecord(domain string, opts *dnsimple.ChangeRecord) (string, error)
+
+	// DestroyRecord deletes the DNS record with the given id.
 	DestroyRecord(domain string, id string) error
 }

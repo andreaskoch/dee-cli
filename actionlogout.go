@@ -6,6 +6,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/andreaskoch/dee-ns"
 )
 
 var (
@@ -13,7 +14,7 @@ var (
 )
 
 type logoutAction struct {
-	credentialStore credentialStore
+	credentialStore deens.CredentialStore
 }
 
 func (action logoutAction) Name() string {
