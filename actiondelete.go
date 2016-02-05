@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/andreaskoch/dee-ns"
 )
 
 var (
@@ -20,7 +21,7 @@ var (
 )
 
 type deleteAction struct {
-	addressRecordDeleter dnsRecordDeleter
+	dnsEditorFactory dnsEditorCreator
 }
 
 func (action deleteAction) Name() string {
@@ -65,7 +66,14 @@ func (action deleteAction) Execute(arguments []string) (message, error) {
 		return nil, fmt.Errorf("No record type supplied")
 	}
 
-	deleteError := action.addressRecordDeleter.DeleteSubdomain(*deleteDomain, *deleteSubdomain, *deleteRecordType)
+	// create a DNS editor
+	var addressRecordDeleter deens.DNSRecordDeleter
+	addressRecordDeleter, dnsEditorError := action.dnsEditorFactory.CreateDNSEditor()
+	if dnsEditorError != nil {
+		return nil, fmt.Errorf("Cannot create DNS editor: %s", dnsEditorError.Error())
+	}
+
+	deleteError := addressRecordDeleter.DeleteSubdomain(*deleteDomain, *deleteSubdomain, *deleteRecordType)
 	if deleteError != nil {
 		return nil, fmt.Errorf("%s", deleteError.Error())
 	}

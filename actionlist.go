@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/andreaskoch/dee-ns"
 	"github.com/pearkes/dnsimple"
 	"strings"
 	"text/tabwriter"
@@ -22,7 +23,7 @@ var (
 )
 
 type listAction struct {
-	infoProviderFactory dnsInfoProviderFactory
+	infoProviderFactory dnsInfoProviderCreator
 }
 
 func (action listAction) Name() string {
@@ -90,13 +91,12 @@ func (action listAction) Execute(arguments []string) (message, error) {
 }
 
 // getInfoProvider returns a DNS info provider instance or an error if the creation of the provider failed.
-func (action listAction) getInfoProvider() (dnsInfoProvider, error) {
+func (action listAction) getInfoProvider() (deens.DNSInfoProvider, error) {
 	if action.infoProviderFactory == nil {
 		return nil, fmt.Errorf("No DNS info provider factory available")
 	}
 
-	infoProvider := action.infoProviderFactory.CreateInfoProvider()
-	return infoProvider, nil
+	return action.infoProviderFactory.CreateInfoProvider()
 }
 
 // formatDNSRecords takes a list of DNS records and formats them as a table.

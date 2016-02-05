@@ -14,7 +14,7 @@ func newUsagePrinter(executableName string, version string, actions []action) us
 	return usagePrinter{executableName, version, actions}
 }
 
-// usagePrinter prints usage information for dnsimple-cli.
+// usagePrinter prints usage information for the command line utility.
 type usagePrinter struct {
 	executableName string
 	version        string

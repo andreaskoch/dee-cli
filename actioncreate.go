@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/andreaskoch/dee-ns"
 	"net"
 	"os"
 )
@@ -23,8 +24,8 @@ var (
 )
 
 type createAction struct {
-	addressRecordCreator dnsRecordCreator
-	stdin                *os.File
+	dnsEditorFactory dnsEditorCreator
+	stdin            *os.File
 }
 
 func (action createAction) Name() string {
@@ -65,11 +66,6 @@ func (action createAction) Execute(arguments []string) (message, error) {
 		return nil, fmt.Errorf("No subdomain supplied")
 	}
 
-	// subdomain
-	if *createSubdomain == "" {
-		return nil, fmt.Errorf("No subdomain supplied")
-	}
-
 	// TTL
 	if *createTTL < 0 {
 		return nil, fmt.Errorf("The given TTL cannot be negative")
@@ -91,7 +87,14 @@ func (action createAction) Execute(arguments []string) (message, error) {
 		return nil, fmt.Errorf("Cannot parse IP %q", ip)
 	}
 
-	createError := action.addressRecordCreator.CreateSubdomain(*createDomain, *createSubdomain, *createTTL, ip)
+	// create a DNS editor
+	var addressRecordCreator deens.DNSRecordCreator
+	addressRecordCreator, dnsEditorError := action.dnsEditorFactory.CreateDNSEditor()
+	if dnsEditorError != nil {
+		return nil, fmt.Errorf("Cannot create DNS editor: %s", dnsEditorError.Error())
+	}
+
+	createError := addressRecordCreator.CreateSubdomain(*createDomain, *createSubdomain, *createTTL, ip)
 	if createError != nil {
 		return nil, fmt.Errorf("%s", createError.Error())
 	}

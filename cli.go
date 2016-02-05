@@ -7,6 +7,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/andreaskoch/dee-ns"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/afero"
 	"os"
@@ -62,18 +63,18 @@ func init() {
 	dnsClientFactory := dnsimpleClientFactory{credentialStore}
 
 	// create DNSimple info provider
-	dnsimpleInfoProviderFactory := &dnsimpleInfoProviderFactory{dnsClientFactory}
+	dnsInfoProviderFactory := dnsimpleInfoProviderFactory{dnsClientFactory}
 
 	// create a DNS editor instance
-	dnsimpleEditor := &dnsEditor{dnsClientFactory, dnsimpleInfoProviderFactory}
+	dnsEditorFactory := dnsEditorFactory{dnsClientFactory, dnsInfoProviderFactory}
 
 	actions = []action{
 		loginAction{credentialStore},
 		logoutAction{credentialStore},
-		listAction{dnsimpleInfoProviderFactory},
-		createAction{dnsimpleEditor, os.Stdin},
-		updateAction{dnsimpleEditor, os.Stdin},
-		deleteAction{dnsimpleEditor},
+		listAction{dnsInfoProviderFactory},
+		createAction{dnsEditorFactory, os.Stdin},
+		updateAction{dnsEditorFactory, os.Stdin},
+		deleteAction{dnsEditorFactory},
 	}
 
 	// override the help information printer
@@ -134,7 +135,7 @@ func getActionByName(actionName string, actions []action) action {
 // getSettingsFolder returns the path of the settings folder
 // and ensures that the folder exists.
 func getSettingsFolder(fs afero.Fs, baseFolder string) string {
-	settingsFolder := filepath.Join(baseFolder, ".dnsimple-cli")
+	settingsFolder := filepath.Join(baseFolder, ".dee")
 	createFolderError := fs.MkdirAll(settingsFolder, 0700)
 	if createFolderError != nil {
 		panic(createFolderError)
@@ -155,4 +156,73 @@ type successMessage struct {
 // Text returns the text of the current message.
 func (m successMessage) Text() string {
 	return m.text
+}
+
+// dnsClientFactory provides the ability to create DNS clients.
+type dnsClientFactory interface {
+	// CreateClient create a new dnsClient client instance.
+	CreateClient() (deens.DNSClient, error)
+}
+
+// dnsimpleClientFactory creates DNSimple clients.
+type dnsimpleClientFactory struct {
+	credentialStore deens.CredentialStore
+}
+
+// CreateClient create a new DNSimple client instance.
+func (clientFactory dnsimpleClientFactory) CreateClient() (deens.DNSClient, error) {
+
+	// get the credentials
+	credentials, credentialError := clientFactory.credentialStore.GetCredentials()
+	if credentialError != nil {
+		return nil, fmt.Errorf("%s", credentialError.Error())
+	}
+
+	// create a DNSimple client
+	dnsimpleClient, dnsimpleClientError := deens.NewDNSClient(credentials)
+	if dnsimpleClientError != nil {
+		return nil, fmt.Errorf("Unable to create DNSimple client. Error: %s", dnsimpleClientError.Error())
+	}
+
+	return dnsimpleClient, nil
+}
+
+type dnsInfoProviderCreator interface {
+	CreateInfoProvider() (deens.DNSInfoProvider, error)
+}
+
+type dnsimpleInfoProviderFactory struct {
+	clientFactory dnsClientFactory
+}
+
+func (infoFactory dnsimpleInfoProviderFactory) CreateInfoProvider() (deens.DNSInfoProvider, error) {
+	client, err := infoFactory.clientFactory.CreateClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return deens.NewDNSInfoProvider(client), nil
+}
+
+type dnsEditorCreator interface {
+	CreateDNSEditor() (deens.DNSRecordEditor, error)
+}
+
+type dnsEditorFactory struct {
+	clientFactory       dnsClientFactory
+	infoProviderFactory dnsInfoProviderCreator
+}
+
+func (editorFactory dnsEditorFactory) CreateDNSEditor() (deens.DNSRecordEditor, error) {
+	client, err := editorFactory.clientFactory.CreateClient()
+	if err != nil {
+		return nil, err
+	}
+
+	infoProvider, err := editorFactory.infoProviderFactory.CreateInfoProvider()
+	if err != nil {
+		return nil, err
+	}
+
+	return deens.NewDNSEditor(client, infoProvider), nil
 }

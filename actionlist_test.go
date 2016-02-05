@@ -11,6 +11,30 @@ import (
 	"testing"
 )
 
+// testDNSInfoProvider is a DNS info-provider used for testing.
+type testDNSInfoProvider struct {
+	getDomainNamesFunc      func() ([]string, error)
+	getDomainRecordsFunc    func(domain string) ([]dnsimple.Record, error)
+	getSubdomainRecordFunc  func(domain, subdomain, recordType string) (dnsimple.Record, error)
+	getSubdomainRecordsFunc func(domain, subdomain string) ([]dnsimple.Record, error)
+}
+
+func (infoProvider testDNSInfoProvider) GetDomainNames() ([]string, error) {
+	return infoProvider.getDomainNamesFunc()
+}
+
+func (infoProvider testDNSInfoProvider) GetDomainRecords(domain string) ([]dnsimple.Record, error) {
+	return infoProvider.getDomainRecordsFunc(domain)
+}
+
+func (infoProvider testDNSInfoProvider) GetSubdomainRecord(domain, subdomain, recordType string) (record dnsimple.Record, err error) {
+	return infoProvider.getSubdomainRecordFunc(domain, subdomain, recordType)
+}
+
+func (infoProvider testDNSInfoProvider) GetSubdomainRecords(domain, subdomain string) ([]dnsimple.Record, error) {
+	return infoProvider.getSubdomainRecordsFunc(domain, subdomain)
+}
+
 // The Name function should return "list"
 func Test_listAction_Name_ResultIsLogin(t *testing.T) {
 	// arrange
@@ -75,7 +99,7 @@ func Test_listAction_InvalidArguments_ErrorIsReturned(t *testing.T) {
 			},
 		}
 
-		infoProviderFactory := testInfoProviderFactory{dnsInfoProvider}
+		infoProviderFactory := testInfoProviderFactory{dnsInfoProvider, nil}
 
 		list := listAction{infoProviderFactory}
 
@@ -141,7 +165,7 @@ func Test_listAction_DomainAndSubDomainAreSet_SubdomainRecordsArePrinted(t *test
 		},
 	}
 
-	infoProviderFactory := testInfoProviderFactory{dnsInfoProvider}
+	infoProviderFactory := testInfoProviderFactory{dnsInfoProvider, nil}
 
 	list := listAction{infoProviderFactory}
 
@@ -171,7 +195,7 @@ func Test_listAction_DomainAndSubDomainAreSet_InfoProviderReturnsError_ErrorIsRe
 		},
 	}
 
-	infoProviderFactory := testInfoProviderFactory{dnsInfoProvider}
+	infoProviderFactory := testInfoProviderFactory{dnsInfoProvider, nil}
 
 	list := listAction{infoProviderFactory}
 
@@ -212,7 +236,7 @@ func Test_listAction_DomainSet_DNSRecordsArePrinted(t *testing.T) {
 		},
 	}
 
-	infoProviderFactory := testInfoProviderFactory{dnsInfoProvider}
+	infoProviderFactory := testInfoProviderFactory{dnsInfoProvider, nil}
 
 	list := listAction{infoProviderFactory}
 
@@ -240,7 +264,7 @@ func Test_listAction_DomainSet_InfoProviderReturnsError_ErrorIsReturned(t *testi
 		},
 	}
 
-	infoProviderFactory := testInfoProviderFactory{dnsInfoProvider}
+	infoProviderFactory := testInfoProviderFactory{dnsInfoProvider, nil}
 
 	list := listAction{infoProviderFactory}
 
@@ -268,7 +292,7 @@ func Test_listAction_NoArguments_DomainsArePrinted(t *testing.T) {
 		},
 	}
 
-	infoProviderFactory := testInfoProviderFactory{dnsInfoProvider}
+	infoProviderFactory := testInfoProviderFactory{dnsInfoProvider, nil}
 
 	list := listAction{infoProviderFactory}
 
@@ -293,7 +317,7 @@ func Test_listAction_NoArguments_InfoProviderReturnsError_ErrorIsReturned(t *tes
 		},
 	}
 
-	infoProviderFactory := testInfoProviderFactory{dnsInfoProvider}
+	infoProviderFactory := testInfoProviderFactory{dnsInfoProvider, nil}
 
 	list := listAction{infoProviderFactory}
 
@@ -371,7 +395,7 @@ func Test_listAction_OnlyDomainIsSet_DomainRecordsArePrinted(t *testing.T) {
 		},
 	}
 
-	infoProviderFactory := testInfoProviderFactory{dnsInfoProvider}
+	infoProviderFactory := testInfoProviderFactory{dnsInfoProvider, nil}
 
 	list := listAction{infoProviderFactory}
 

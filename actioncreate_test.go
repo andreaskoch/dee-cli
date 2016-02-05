@@ -140,13 +140,15 @@ func Test_createAction_InvalidArguments_ErrorIsReturned(t *testing.T) {
 		},
 	}
 
-	dnsCreator := &testDNSCreator{
+	dnsCreator := &testDNSEditor{
 		createSubdomainFunc: func(domain, subdomain string, timeToLive int, ip net.IP) error {
 			return nil
 		},
 	}
 
-	createAction := createAction{dnsCreator, nil}
+	editorFactory := testDNSEditorFactory{dnsCreator, nil}
+
+	createAction := createAction{editorFactory, nil}
 
 	for _, arguments := range validArgumentsSet {
 
@@ -217,13 +219,15 @@ func Test_createAction_InvalidArgumentValues_ErrorIsReturned(t *testing.T) {
 		},
 	}
 
-	dnsCreator := &testDNSCreator{
+	dnsCreator := &testDNSEditor{
 		createSubdomainFunc: func(domain, subdomain string, timeToLive int, ip net.IP) error {
 			return nil
 		},
 	}
 
-	createAction := createAction{dnsCreator, nil}
+	editorFactory := testDNSEditorFactory{dnsCreator, nil}
+
+	createAction := createAction{editorFactory, nil}
 
 	for _, arguments := range validArgumentsSet {
 
@@ -248,13 +252,15 @@ func Test_createAction_IPAddressIsInvalid_ErrorIsReturned(t *testing.T) {
 		"10000:21323:31231",
 	}
 
-	dnsCreator := &testDNSCreator{
+	dnsCreator := &testDNSEditor{
 		createSubdomainFunc: func(domain, subdomain string, timeToLive int, ip net.IP) error {
 			return nil
 		},
 	}
 
-	createAction := createAction{dnsCreator, nil}
+	editorFactory := testDNSEditorFactory{dnsCreator, nil}
+
+	createAction := createAction{editorFactory, nil}
 
 	for _, invalidIP := range invalidIPs {
 
@@ -328,13 +334,15 @@ func Test_createAction_ValidArguments_NoErrorIsReturned(t *testing.T) {
 		},
 	}
 
-	dnsCreator := &testDNSCreator{
+	dnsCreator := &testDNSEditor{
 		createSubdomainFunc: func(domain, subdomain string, timeToLive int, ip net.IP) error {
 			return nil
 		},
 	}
 
-	createAction := createAction{dnsCreator, nil}
+	editorFactory := testDNSEditorFactory{dnsCreator, nil}
+
+	createAction := createAction{editorFactory, nil}
 
 	for _, arguments := range validArgumentsSet {
 
@@ -344,13 +352,13 @@ func Test_createAction_ValidArguments_NoErrorIsReturned(t *testing.T) {
 		// assert
 		if err != nil {
 			t.Fail()
-			t.Logf("createAction.Execute(dnsCreator, %q) should not return an error: %q", arguments, err.Error())
+			t.Logf("createAction.Execute(%q) should not return an error: %q", arguments, err.Error())
 		}
 	}
 }
 
-// createAction.Execute should return an error if the DNS creator responds with one.
-func Test_createAction_ValidArguments_DNSCreatorRespondsWithError_ErrorIsReturned(t *testing.T) {
+// createAction.Execute should return an error if the DNS editor responds with one.
+func Test_createAction_ValidArguments_CreateFails_ErrorIsReturned(t *testing.T) {
 	// arrange
 	arguments := []string{
 		"-domain",
@@ -361,13 +369,15 @@ func Test_createAction_ValidArguments_DNSCreatorRespondsWithError_ErrorIsReturne
 		"2001:0db8:0000:0042:0000:8a2e:0370:7334",
 	}
 
-	dnsCreator := &testDNSCreator{
+	dnsCreator := &testDNSEditor{
 		createSubdomainFunc: func(domain, subdomain string, timeToLive int, ip net.IP) error {
 			return fmt.Errorf("DNS Record create failed")
 		},
 	}
 
-	createAction := createAction{dnsCreator, nil}
+	editorFactory := testDNSEditorFactory{dnsCreator, nil}
+
+	createAction := createAction{editorFactory, nil}
 
 	// act
 	_, err := createAction.Execute(arguments)
@@ -375,12 +385,12 @@ func Test_createAction_ValidArguments_DNSCreatorRespondsWithError_ErrorIsReturne
 	// assert
 	if err == nil {
 		t.Fail()
-		t.Logf("createAction.Execute(dnsCreator, %q) should return an error because the DNS creator returned one.", arguments)
+		t.Logf("createAction.Execute(%q) should return an error because the DNS creator returned one.", arguments)
 	}
 }
 
 // createAction.Execute should return a success message if the DNS creator succeeds.
-func Test_createAction_ValidArguments_DNSCreatorSucceeds_SuccessMessageIsReturned(t *testing.T) {
+func Test_createAction_ValidArguments_CreateSucceds_SuccessMessageIsReturned(t *testing.T) {
 	// arrange
 	arguments := []string{
 		"-domain",
@@ -391,13 +401,15 @@ func Test_createAction_ValidArguments_DNSCreatorSucceeds_SuccessMessageIsReturne
 		"2001:0db8:0000:0042:0000:8a2e:0370:7334",
 	}
 
-	dnsCreator := &testDNSCreator{
+	dnsCreator := &testDNSEditor{
 		createSubdomainFunc: func(domain, subdomain string, timeToLive int, ip net.IP) error {
 			return nil
 		},
 	}
 
-	createAction := createAction{dnsCreator, nil}
+	editorFactory := testDNSEditorFactory{dnsCreator, nil}
+
+	createAction := createAction{editorFactory, nil}
 
 	// act
 	response, _ := createAction.Execute(arguments)
@@ -405,12 +417,12 @@ func Test_createAction_ValidArguments_DNSCreatorSucceeds_SuccessMessageIsReturne
 	// assert
 	if response == nil {
 		t.Fail()
-		t.Logf("createAction.Execute(dnsCreator, %q) should respond with a success message if the DNS creator succeeds.", arguments)
+		t.Logf("createAction.Execute(%q) should respond with a success message if the DNS creator succeeds.", arguments)
 	}
 }
 
-// createAction.Execute should return a success message that contains the subdomain, domain and ip.
-func Test_createAction_ValidArguments_DNSCreatorSucceeds_SuccessMessageContainsTheSubdomainAndNewIP(t *testing.T) {
+// createAction.Execute should return an error if the DNS editor factory returns an error.
+func Test_createAction_ValidArguments_DNSEditorCreationFails_ErrorIsReturned(t *testing.T) {
 	// arrange
 	arguments := []string{
 		"-domain",
@@ -421,13 +433,41 @@ func Test_createAction_ValidArguments_DNSCreatorSucceeds_SuccessMessageContainsT
 		"2001:db8:0:42:0:8a2e:370:7334",
 	}
 
-	dnsCreator := &testDNSCreator{
+	editorFactory := testDNSEditorFactory{nil, fmt.Errorf("Unable to create DNS editor")}
+
+	createAction := createAction{editorFactory, nil}
+
+	// act
+	_, err := createAction.Execute(arguments)
+
+	// assert
+	if err == nil {
+		t.Fail()
+		t.Logf("createAction.Execute(%q) should return an error if the DNS editor factory returned an error.", arguments)
+	}
+}
+
+// createAction.Execute should return a success message that contains the subdomain, domain and ip.
+func Test_createAction_ValidArguments_CreateSucceds_SuccessMessageContainsTheSubdomainAndNewIP(t *testing.T) {
+	// arrange
+	arguments := []string{
+		"-domain",
+		"example.com",
+		"-subdomain",
+		"www",
+		"-ip",
+		"2001:db8:0:42:0:8a2e:370:7334",
+	}
+
+	dnsCreator := &testDNSEditor{
 		createSubdomainFunc: func(domain, subdomain string, timeToLive int, ip net.IP) error {
 			return nil
 		},
 	}
 
-	createAction := createAction{dnsCreator, nil}
+	editorFactory := testDNSEditorFactory{dnsCreator, nil}
+
+	createAction := createAction{editorFactory, nil}
 
 	// act
 	response, _ := createAction.Execute(arguments)
@@ -439,6 +479,6 @@ func Test_createAction_ValidArguments_DNSCreatorSucceeds_SuccessMessageContainsT
 
 	if !containsIP || !containsSubdomain || !containsDomain {
 		t.Fail()
-		t.Logf("createAction.Execute(dnsCreator, %q) should respond with a success message that contains the domain, subdomain and ip but responded with %q instead.", arguments, response.Text())
+		t.Logf("createAction.Execute(%q) should respond with a success message that contains the domain, subdomain and ip but responded with %q instead.", arguments, response.Text())
 	}
 }

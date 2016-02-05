@@ -96,13 +96,15 @@ func Test_deleteAction_InvalidArguments_ErrorIsReturned(t *testing.T) {
 		},
 	}
 
-	dnsDeleter := &testDNSDeleter{
+	dnsDeleter := &testDNSEditor{
 		deleteSubdomainFunc: func(domain, subdomain string, recordType string) error {
 			return nil
 		},
 	}
 
-	deleteAction := deleteAction{dnsDeleter}
+	editorFactory := testDNSEditorFactory{dnsDeleter, nil}
+
+	deleteAction := deleteAction{editorFactory}
 
 	for _, arguments := range validArgumentsSet {
 
@@ -147,13 +149,15 @@ func Test_deleteAction_InvalidArgumentValues_ErrorIsReturned(t *testing.T) {
 		},
 	}
 
-	dnsDeleter := &testDNSDeleter{
+	dnsDeleter := &testDNSEditor{
 		deleteSubdomainFunc: func(domain, subdomain string, recordType string) error {
 			return nil
 		},
 	}
 
-	deleteAction := deleteAction{dnsDeleter}
+	editorFactory := testDNSEditorFactory{dnsDeleter, nil}
+
+	deleteAction := deleteAction{editorFactory}
 
 	for _, arguments := range validArgumentsSet {
 
@@ -187,13 +191,15 @@ func Test_deleteAction_ValidArguments_NoErrorIsReturned(t *testing.T) {
 		},
 	}
 
-	dnsDeleter := &testDNSDeleter{
+	dnsDeleter := &testDNSEditor{
 		deleteSubdomainFunc: func(domain, subdomain string, recordType string) error {
 			return nil
 		},
 	}
 
-	deleteAction := deleteAction{dnsDeleter}
+	editorFactory := testDNSEditorFactory{dnsDeleter, nil}
+
+	deleteAction := deleteAction{editorFactory}
 
 	for _, arguments := range validArgumentsSet {
 
@@ -203,13 +209,13 @@ func Test_deleteAction_ValidArguments_NoErrorIsReturned(t *testing.T) {
 		// assert
 		if err != nil {
 			t.Fail()
-			t.Logf("deleteAction.Execute(dnsDeleter, %q) should not return an error: %q", arguments, err.Error())
+			t.Logf("deleteAction.Execute(%q) should not return an error: %q", arguments, err.Error())
 		}
 	}
 }
 
-// deleteAction.Execute should return an error if the DNS Updater responds with one.
-func Test_deleteAction_ValidArguments_DNSCreatorRespondsWithError_ErrorIsReturned(t *testing.T) {
+// deleteAction.Execute should return an error if the DNS Editor responds with one.
+func Test_deleteAction_ValidArguments_DeleteRespondsWithError_ErrorIsReturned(t *testing.T) {
 	// arrange
 	arguments := []string{
 		"-domain",
@@ -220,13 +226,15 @@ func Test_deleteAction_ValidArguments_DNSCreatorRespondsWithError_ErrorIsReturne
 		"AAAA",
 	}
 
-	dnsDeleter := &testDNSDeleter{
+	dnsDeleter := &testDNSEditor{
 		deleteSubdomainFunc: func(domain, subdomain string, recordType string) error {
 			return fmt.Errorf("DNS Record delete failed")
 		},
 	}
 
-	deleteAction := deleteAction{dnsDeleter}
+	editorFactory := testDNSEditorFactory{dnsDeleter, nil}
+
+	deleteAction := deleteAction{editorFactory}
 
 	// act
 	_, err := deleteAction.Execute(arguments)
@@ -234,12 +242,12 @@ func Test_deleteAction_ValidArguments_DNSCreatorRespondsWithError_ErrorIsReturne
 	// assert
 	if err == nil {
 		t.Fail()
-		t.Logf("deleteAction.Execute(dnsDeleter, %q) should return an error because the DNS deleter returned one.", arguments)
+		t.Logf("deleteAction.Execute(%q) should return an error because the DNS deleter returned one.", arguments)
 	}
 }
 
 // deleteAction.Execute should return a success message if the DNS deleter succeeds.
-func Test_deleteAction_ValidArguments_DNSCreatorSucceeds_SuccessMessageIsReturned(t *testing.T) {
+func Test_deleteAction_ValidArguments_DeleteSucceeds_SuccessMessageIsReturned(t *testing.T) {
 	// arrange
 	arguments := []string{
 		"-domain",
@@ -250,13 +258,15 @@ func Test_deleteAction_ValidArguments_DNSCreatorSucceeds_SuccessMessageIsReturne
 		"AAAA",
 	}
 
-	dnsDeleter := &testDNSDeleter{
+	dnsDeleter := &testDNSEditor{
 		deleteSubdomainFunc: func(domain, subdomain string, recordType string) error {
 			return nil
 		},
 	}
 
-	deleteAction := deleteAction{dnsDeleter}
+	editorFactory := testDNSEditorFactory{dnsDeleter, nil}
+
+	deleteAction := deleteAction{editorFactory}
 
 	// act
 	response, _ := deleteAction.Execute(arguments)
@@ -264,12 +274,12 @@ func Test_deleteAction_ValidArguments_DNSCreatorSucceeds_SuccessMessageIsReturne
 	// assert
 	if response == nil {
 		t.Fail()
-		t.Logf("deleteAction.Execute(dnsDeleter, %q) should respond with a success message if the DNS deleter succeeds.", arguments)
+		t.Logf("deleteAction.Execute(%q) should respond with a success message if the DNS deleter succeeds.", arguments)
 	}
 }
 
-// deleteAction.Execute should return a success message that contains the subdomain, domain and record type.
-func Test_deleteAction_ValidArguments_DNSCreatorSucceeds_SuccessMessageContainsTheSubdomainAndType(t *testing.T) {
+// deleteAction.Execute should return an error if the DNS editor factory returns an error.
+func Test_deleteAction_ValidArguments_DNSEditorCreationFails_ErrorIsReturned(t *testing.T) {
 	// arrange
 	arguments := []string{
 		"-domain",
@@ -280,13 +290,40 @@ func Test_deleteAction_ValidArguments_DNSCreatorSucceeds_SuccessMessageContainsT
 		"AAAA",
 	}
 
-	dnsDeleter := &testDNSDeleter{
+	editorFactory := testDNSEditorFactory{nil, fmt.Errorf("Unable to create DNS Editor")}
+	deleteAction := deleteAction{editorFactory}
+
+	// act
+	_, err := deleteAction.Execute(arguments)
+
+	// assert
+	if err == nil {
+		t.Fail()
+		t.Logf("createAction.Execute(%q) should return an error if the DNS editor factory returned an error.", arguments)
+	}
+}
+
+// deleteAction.Execute should return a success message that contains the subdomain, domain and record type.
+func Test_deleteAction_ValidArguments_DeleteSucceeds_SuccessMessageContainsTheSubdomainAndType(t *testing.T) {
+	// arrange
+	arguments := []string{
+		"-domain",
+		"example.com",
+		"-subdomain",
+		"www",
+		"-type",
+		"AAAA",
+	}
+
+	dnsDeleter := &testDNSEditor{
 		deleteSubdomainFunc: func(domain, subdomain string, recordType string) error {
 			return nil
 		},
 	}
 
-	deleteAction := deleteAction{dnsDeleter}
+	editorFactory := testDNSEditorFactory{dnsDeleter, nil}
+
+	deleteAction := deleteAction{editorFactory}
 
 	// act
 	response, _ := deleteAction.Execute(arguments)
@@ -298,6 +335,6 @@ func Test_deleteAction_ValidArguments_DNSCreatorSucceeds_SuccessMessageContainsT
 
 	if !containsSubdomain || !containsDomain || !containsRecordType {
 		t.Fail()
-		t.Logf("deleteAction.Execute(dnsDeleter, %q) should respond with a success message that contains the domain, subdomain and record type but responded with %q instead.", arguments, response.Text())
+		t.Logf("deleteAction.Execute(%q) should respond with a success message that contains the domain, subdomain and record type but responded with %q instead.", arguments, response.Text())
 	}
 }

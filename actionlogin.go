@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/andreaskoch/dee-ns"
 )
 
 var (
@@ -18,7 +19,7 @@ var (
 )
 
 type loginAction struct {
-	credentialStore credentialStore
+	credentialStore deens.CredentialStore
 }
 
 func (action loginAction) Name() string {
@@ -52,7 +53,7 @@ func (action loginAction) Execute(arguments []string) (message, error) {
 	}
 
 	// perform the login action
-	credentials, credentialError := newAPICredentials(*emailAddress, *apiToken)
+	credentials, credentialError := deens.NewAPICredentials(*emailAddress, *apiToken)
 	if credentialError != nil {
 		return nil, credentialError
 	}

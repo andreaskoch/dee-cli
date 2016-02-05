@@ -6,6 +6,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/andreaskoch/dee-ns"
 	"github.com/spf13/afero"
 	"testing"
 )
@@ -14,7 +15,7 @@ import (
 func Test_loginAction_Name_ResultIsLogin(t *testing.T) {
 	// arrange
 
-	credentialStore := testCredentialsStore{saveFunc: func(credentials apiCredentials) error {
+	credentialStore := testCredentialsStore{saveFunc: func(credentials deens.APICredentials) error {
 		return nil
 	}}
 
@@ -34,7 +35,7 @@ func Test_loginAction_Name_ResultIsLogin(t *testing.T) {
 func Test_loginAction_Description_ResultIsNotEmpty(t *testing.T) {
 	// arrange
 
-	credentialStore := testCredentialsStore{saveFunc: func(credentials apiCredentials) error {
+	credentialStore := testCredentialsStore{saveFunc: func(credentials deens.APICredentials) error {
 		return nil
 	}}
 
@@ -54,7 +55,7 @@ func Test_loginAction_Description_ResultIsNotEmpty(t *testing.T) {
 func Test_loginAction_Usage_ResultIsNotEmpty(t *testing.T) {
 	// arrange
 
-	credentialStore := testCredentialsStore{saveFunc: func(credentials apiCredentials) error {
+	credentialStore := testCredentialsStore{saveFunc: func(credentials deens.APICredentials) error {
 		return nil
 	}}
 
@@ -97,7 +98,7 @@ func Test_loginAction_InvalidArguments_ErrorIsReturned(t *testing.T) {
 	}
 
 	for _, arguments := range validArgumentsSet {
-		credentialStore := testCredentialsStore{saveFunc: func(credentials apiCredentials) error {
+		credentialStore := testCredentialsStore{saveFunc: func(credentials deens.APICredentials) error {
 			return nil
 		}}
 
@@ -141,7 +142,7 @@ func Test_loginAction_ValidArguments_NoErrorIsReturned(t *testing.T) {
 	}
 
 	for _, arguments := range validArgumentsSet {
-		credentialStore := testCredentialsStore{saveFunc: func(credentials apiCredentials) error {
+		credentialStore := testCredentialsStore{saveFunc: func(credentials deens.APICredentials) error {
 			return nil
 		}}
 
@@ -185,7 +186,7 @@ func Test_loginAction_ValidArguments_ButInvalidValues_ErrorIsReturned(t *testing
 	}
 
 	for _, arguments := range validArgumentsSet {
-		credentialStore := testCredentialsStore{saveFunc: func(credentials apiCredentials) error {
+		credentialStore := testCredentialsStore{saveFunc: func(credentials deens.APICredentials) error {
 			return nil
 		}}
 
@@ -206,7 +207,7 @@ func Test_loginAction_ValidArguments_ButInvalidValues_ErrorIsReturned(t *testing
 func Test_loginAction_ValidArguments_CredentialFileIsCreated(t *testing.T) {
 	// arrange
 	filesystem := afero.NewMemMapFs()
-	credentialStore := newFilesystemCredentialStore(filesystem, "/home/testuser/.dnsimple-cli/credentials.json")
+	credentialStore := newFilesystemCredentialStore(filesystem, "/home/testuser/.dee/credentials.json")
 	arguments := []string{
 		"-email",
 		"user@example.com",
@@ -220,7 +221,7 @@ func Test_loginAction_ValidArguments_CredentialFileIsCreated(t *testing.T) {
 	login.Execute(arguments)
 
 	// assert
-	fileInfo, err := filesystem.Stat("/home/testuser/.dnsimple-cli/credentials.json")
+	fileInfo, err := filesystem.Stat("/home/testuser/.dee/credentials.json")
 	if fileInfo == nil || err != nil {
 		t.Fail()
 		t.Logf("login.Execute(%q) create the credential file and should not return an error: %s", arguments, err.Error())
@@ -262,7 +263,7 @@ func Test_loginAction_Login_ValidCredentials_CredentialsArePassedToCredentialSto
 	for _, arguments := range inputs {
 
 		credStore := testCredentialsStore{
-			saveFunc: func(credentials apiCredentials) error {
+			saveFunc: func(credentials deens.APICredentials) error {
 
 				// assert
 				if credentials.Email != arguments[1] || credentials.Token != arguments[3] {
@@ -283,7 +284,7 @@ func Test_loginAction_Login_ValidCredentials_CredentialsArePassedToCredentialSto
 func Test_loginAction_Login_ValidCredentials_CredentialStoreSaveFails_ErrorIsReturned(t *testing.T) {
 	// arrange
 	credStore := testCredentialsStore{
-		saveFunc: func(credentials apiCredentials) error {
+		saveFunc: func(credentials deens.APICredentials) error {
 			return fmt.Errorf("Save failed")
 		},
 	}

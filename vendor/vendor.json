@@ -3,6 +3,11 @@
 	"ignore": "test",
 	"package": [
 		{
+			"path": "github.com/andreaskoch/dee-ns",
+			"revision": "c9b6ae498d43c7ec36b123e9a15387462d5a5287",
+			"revisionTime": "2016-02-03T21:29:55+01:00"
+		},
+		{
 			"path": "github.com/hashicorp/go-cleanhttp",
 			"revision": "ce617e79981a8fff618bb643d155133a8f38db96",
 			"revisionTime": "2015-12-17T15:04:12-05:00"

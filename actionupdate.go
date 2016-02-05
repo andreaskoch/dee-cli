@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/andreaskoch/dee-ns"
 	"net"
 	"os"
 )
@@ -22,8 +23,8 @@ var (
 )
 
 type updateAction struct {
-	addressRecordUpdater dnsRecordUpdater
-	stdin                *os.File
+	dnsEditorFactory dnsEditorCreator
+	stdin            *os.File
 }
 
 func (action updateAction) Name() string {
@@ -74,7 +75,14 @@ func (action updateAction) Execute(arguments []string) (message, error) {
 		return nil, fmt.Errorf("Cannot parse IP %q", ip)
 	}
 
-	updateError := action.addressRecordUpdater.UpdateSubdomain(*updateDomain, *updateSubdomain, ip)
+	// create a DNS editor
+	var addressRecordUpdater deens.DNSRecordUpdater
+	addressRecordUpdater, dnsEditorError := action.dnsEditorFactory.CreateDNSEditor()
+	if dnsEditorError != nil {
+		return nil, fmt.Errorf("Cannot create DNS editor: %s", dnsEditorError.Error())
+	}
+
+	updateError := addressRecordUpdater.UpdateSubdomain(*updateDomain, *updateSubdomain, ip)
 	if updateError != nil {
 		return nil, fmt.Errorf("%s", updateError.Error())
 	}
