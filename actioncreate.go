@@ -13,6 +13,8 @@ import (
 	"os"
 )
 
+const defaultTTL = 600
+
 var (
 	actionNameCreate = "create"
 
@@ -20,7 +22,7 @@ var (
 	createDomain                 = createAddressRecordArguments.String("domain", "", "Domain (e.g. example.com)")
 	createSubdomain              = createAddressRecordArguments.String("subdomain", "", "Subdomain (e.g. www)")
 	createIP                     = createAddressRecordArguments.String("ip", "", "IP address (e.g. ::1, 127.0.0.1)")
-	createTTL                    = createAddressRecordArguments.Int("ttl", 600, "The time to live in seconds")
+	createTTL                    = createAddressRecordArguments.Int("ttl", defaultTTL, "The time to live in seconds")
 )
 
 type createAction struct {
@@ -51,7 +53,7 @@ func (action createAction) Execute(arguments []string) (message, error) {
 	*createDomain = ""
 	*createSubdomain = ""
 	*createIP = ""
-	*createTTL = 0
+	*createTTL = defaultTTL
 	if parseError := createAddressRecordArguments.Parse(arguments); parseError != nil {
 		return nil, parseError
 	}
