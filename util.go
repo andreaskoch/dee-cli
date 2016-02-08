@@ -5,6 +5,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strings"
 )
@@ -28,4 +29,18 @@ func stdinHasData(stdin *os.File) bool {
 	}
 
 	return false
+}
+
+// getFormattedDomainName returns the formatted domain name for
+// the given subdomain and domain names.
+func getFormattedDomainName(subdomain, domain string) string {
+	if domain == "" {
+		return ""
+	}
+
+	if subdomain == "" {
+		return domain
+	}
+
+	return fmt.Sprintf("%s.%s", subdomain, domain)
 }

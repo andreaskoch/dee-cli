@@ -61,11 +61,6 @@ func (action createAction) Execute(arguments []string) (message, error) {
 		return nil, fmt.Errorf("No domain supplied")
 	}
 
-	// subdomain
-	if *createSubdomain == "" {
-		return nil, fmt.Errorf("No subdomain supplied")
-	}
-
 	// TTL
 	if *createTTL < 0 {
 		return nil, fmt.Errorf("The given TTL cannot be negative")
@@ -99,5 +94,5 @@ func (action createAction) Execute(arguments []string) (message, error) {
 		return nil, fmt.Errorf("%s", createError.Error())
 	}
 
-	return successMessage{fmt.Sprintf("Created: %s.%s → %s", *createSubdomain, *createDomain, ip.String())}, nil
+	return successMessage{fmt.Sprintf("Created: %s → %s", getFormattedDomainName(*createSubdomain, *createDomain), ip.String())}, nil
 }

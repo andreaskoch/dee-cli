@@ -57,11 +57,6 @@ func (action deleteAction) Execute(arguments []string) (message, error) {
 	}
 
 	// subdomain
-	if *deleteSubdomain == "" {
-		return nil, fmt.Errorf("No subdomain supplied")
-	}
-
-	// subdomain
 	if *deleteRecordType == "" {
 		return nil, fmt.Errorf("No record type supplied")
 	}
@@ -78,5 +73,5 @@ func (action deleteAction) Execute(arguments []string) (message, error) {
 		return nil, fmt.Errorf("%s", deleteError.Error())
 	}
 
-	return successMessage{fmt.Sprintf("Deleted: %s.%s (%s)", *deleteSubdomain, *deleteDomain, *deleteRecordType)}, nil
+	return successMessage{fmt.Sprintf("Deleted: %s (%s)", getFormattedDomainName(*deleteSubdomain, *deleteDomain), *deleteRecordType)}, nil
 }

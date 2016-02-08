@@ -4,8 +4,8 @@
 	"package": [
 		{
 			"path": "github.com/andreaskoch/dee-ns",
-			"revision": "c9b6ae498d43c7ec36b123e9a15387462d5a5287",
-			"revisionTime": "2016-02-03T21:29:55+01:00"
+			"revision": "570637f5aed41688cdf6d93886546698224e0501",
+			"revisionTime": "2016-02-08T22:08:31+01:00"
 		},
 		{
 			"path": "github.com/hashicorp/go-cleanhttp",
