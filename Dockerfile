@@ -5,5 +5,13 @@ MAINTAINER Andreas Koch <andy@ak7.io>
 ADD . /go/src/github.com/andreaskoch/dee-cli
 WORKDIR /go/src/github.com/andreaskoch/dee-cli
 
-# Build
+# Cross-Compile
 RUN make crosscompile
+
+# Compile
+RUN make install
+
+# Link binary to public folder
+RUN ln -s `pwd`/bin/dee-cli /bin/dee
+
+ENTRYPOINT ["/bin/dee"]
