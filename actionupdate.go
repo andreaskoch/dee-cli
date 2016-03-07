@@ -87,5 +87,5 @@ func (action updateAction) Execute(arguments []string) (message, error) {
 		return nil, fmt.Errorf("%s", updateError.Error())
 	}
 
-	return successMessage{fmt.Sprintf("Updated: %s.%s → %s", *updateSubdomain, *updateDomain, ip.String())}, nil
+	return successMessage{fmt.Sprintf("Updated: %s → %s", getFormattedDomainName(*updateSubdomain, *updateDomain), ip.String())}, nil
 }

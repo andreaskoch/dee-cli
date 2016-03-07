@@ -20,7 +20,7 @@ var (
 	createDomain                 = createAddressRecordArguments.String("domain", "", "Domain (e.g. example.com)")
 	createSubdomain              = createAddressRecordArguments.String("subdomain", "", "Subdomain (e.g. www)")
 	createIP                     = createAddressRecordArguments.String("ip", "", "IP address (e.g. ::1, 127.0.0.1)")
-	createTTL                    = createAddressRecordArguments.Int("ttl", 600, "The time to live in seconds")
+	createTTL                    = createAddressRecordArguments.Int("ttl", defaultTTL, "The time to live in seconds")
 )
 
 type createAction struct {
@@ -51,7 +51,7 @@ func (action createAction) Execute(arguments []string) (message, error) {
 	*createDomain = ""
 	*createSubdomain = ""
 	*createIP = ""
-	*createTTL = 0
+	*createTTL = defaultTTL
 	if parseError := createAddressRecordArguments.Parse(arguments); parseError != nil {
 		return nil, parseError
 	}
@@ -59,11 +59,6 @@ func (action createAction) Execute(arguments []string) (message, error) {
 	// domain
 	if *createDomain == "" {
 		return nil, fmt.Errorf("No domain supplied")
-	}
-
-	// subdomain
-	if *createSubdomain == "" {
-		return nil, fmt.Errorf("No subdomain supplied")
 	}
 
 	// TTL
@@ -99,5 +94,5 @@ func (action createAction) Execute(arguments []string) (message, error) {
 		return nil, fmt.Errorf("%s", createError.Error())
 	}
 
-	return successMessage{fmt.Sprintf("Created: %s.%s → %s", *createSubdomain, *createDomain, ip.String())}, nil
+	return successMessage{fmt.Sprintf("Created: %s → %s", getFormattedDomainName(*createSubdomain, *createDomain), ip.String())}, nil
 }

@@ -75,6 +75,7 @@ func init() {
 		createAction{dnsEditorFactory, os.Stdin},
 		updateAction{dnsEditorFactory, os.Stdin},
 		deleteAction{dnsEditorFactory},
+		createOrUpdateAction{dnsEditorFactory, dnsInfoProviderFactory, os.Stdin},
 	}
 
 	// override the help information printer

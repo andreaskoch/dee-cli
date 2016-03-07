@@ -5,6 +5,7 @@
 package deens
 
 import (
+	"fmt"
 	"net"
 	"regexp"
 	"strings"
@@ -37,6 +38,10 @@ func isValidDomain(domain string) bool {
 // isValidSubdomain returns true if the given subdomain name is valid; otherwise false.
 // Note: This is not a real validation. I just want to exclude total garbage.
 func isValidSubdomain(subdomain string) bool {
+	if subdomain == "" {
+		return true
+	}
+
 	if len(subdomain) > 253 {
 		// too long
 		return false
@@ -65,4 +70,18 @@ func getDNSRecordTypeByIP(ip net.IP) string {
 	}
 
 	return "A"
+}
+
+// getFormattedDomainName returns the formatted domain name for
+// the given subdomain and domain names.
+func getFormattedDomainName(subdomain, domain string) string {
+	if domain == "" {
+		return ""
+	}
+
+	if subdomain == "" {
+		return domain
+	}
+
+	return fmt.Sprintf("%s.%s", subdomain, domain)
 }

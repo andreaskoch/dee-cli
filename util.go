@@ -5,6 +5,8 @@
 package main
 
 import (
+	"fmt"
+	"net"
 	"os"
 	"strings"
 )
@@ -28,4 +30,28 @@ func stdinHasData(stdin *os.File) bool {
 	}
 
 	return false
+}
+
+// getFormattedDomainName returns the formatted domain name for
+// the given subdomain and domain names.
+func getFormattedDomainName(subdomain, domain string) string {
+	if domain == "" {
+		return ""
+	}
+
+	if subdomain == "" {
+		return domain
+	}
+
+	return fmt.Sprintf("%s.%s", subdomain, domain)
+}
+
+// getDNSRecordTypeByIP returns the DNS record type for the given IP.
+// It will return "A" for an IPv4 address and "AAAA" for an IPv6 address.
+func getDNSRecordTypeByIP(ip net.IP) string {
+	if ip.To4() == nil {
+		return "AAAA"
+	}
+
+	return "A"
 }

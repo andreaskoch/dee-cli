@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func Test_createAction_Name_UpdateIsReturned(t *testing.T) {
+func Test_createAction_Name_CorrectActionNameIsReturned(t *testing.T) {
 
 	// arrange
 	createAction := createAction{}
@@ -172,16 +172,6 @@ func Test_createAction_InvalidArgumentValues_ErrorIsReturned(t *testing.T) {
 			"",
 			"-subdomain",
 			"www",
-			"-ttl",
-			"600",
-			"-ip",
-			"127.0.0.1",
-		},
-		{
-			"-domain",
-			"example.com",
-			"-subdomain",
-			"",
 			"-ttl",
 			"600",
 			"-ip",

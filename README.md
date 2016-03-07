@@ -26,6 +26,7 @@ dee --help
 - `list` all available domain, subdomain and DNS records
 - `update` a given address record by name
 - `delete` a given address record by name
+- `createorupdate` a given address record
 
 ### Action: `login`
 
@@ -165,6 +166,18 @@ The `-ip` address parameter can also be passed in via Stdin:
 ```bash
 echo "2001:0db8:0000:0042:0000:8a2e:0370:7334" | dee update -domain example.com -subdomain www
 ```
+
+### Action: `createorupdate`
+
+The create-or-update action can be used if you are not sure if the address record you are trying to update does already exist.
+If the record exists it will be just updated; if it does not yet exist it will be created with the given IP address.
+
+**Arguments**:
+
+- `-domain`: A domain name (required)
+- `-subdomain`: The subdomain name (required)
+- `-ip`: An IPv4 or IPv6 address (required)
+- `-ttl`: The time to live (TTL) for the DNS record in seconds (default: 600)
 
 ## Dependencies
 

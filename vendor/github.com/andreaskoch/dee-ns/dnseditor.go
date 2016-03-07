@@ -58,7 +58,7 @@ func (editor *DNSEditor) CreateSubdomain(domain, subdomain string, timeToLive in
 	}
 
 	if isValidSubdomain(subdomain) == false {
-		return fmt.Errorf("The domain name is invalid: %q", subdomain)
+		return fmt.Errorf("The subdomain name is invalid: %q", subdomain)
 	}
 
 	if ip == nil {
@@ -67,8 +67,8 @@ func (editor *DNSEditor) CreateSubdomain(domain, subdomain string, timeToLive in
 
 	// check if the record already exists
 	recordType := getDNSRecordTypeByIP(ip)
-	if _, err := editor.infoProvider.GetSubdomainRecord(domain, subdomain, recordType); err != nil {
-		return fmt.Errorf("No address record of type %q found for %q", recordType, subdomain)
+	if _, err := editor.infoProvider.GetSubdomainRecord(domain, subdomain, recordType); err == nil {
+		return fmt.Errorf("There is already an %q record available for %q", recordType, getFormattedDomainName(subdomain, domain))
 	}
 
 	// create record
@@ -76,7 +76,7 @@ func (editor *DNSEditor) CreateSubdomain(domain, subdomain string, timeToLive in
 		Name:  subdomain,
 		Value: ip.String(),
 		Type:  recordType,
-		Ttl:   fmt.Sprintf("%s", timeToLive),
+		Ttl:   fmt.Sprintf("%d", timeToLive),
 	}
 
 	_, createError := editor.client.CreateRecord(domain, changeRecord)
@@ -96,7 +96,7 @@ func (editor *DNSEditor) UpdateSubdomain(domain, subdomain string, ip net.IP) er
 	}
 
 	if isValidSubdomain(subdomain) == false {
-		return fmt.Errorf("The domain name is invalid: %q", subdomain)
+		return fmt.Errorf("The subdomain name is invalid: %q", subdomain)
 	}
 
 	if ip == nil {
@@ -107,7 +107,7 @@ func (editor *DNSEditor) UpdateSubdomain(domain, subdomain string, ip net.IP) er
 	recordType := getDNSRecordTypeByIP(ip)
 	subdomainRecord, err := editor.infoProvider.GetSubdomainRecord(domain, subdomain, recordType)
 	if err != nil {
-		return fmt.Errorf("No address record of type %q found for %q", recordType, subdomain)
+		return fmt.Errorf("No address record of type %q found for %q", recordType, getFormattedDomainName(subdomain, domain))
 	}
 
 	// check if an update is necessary
@@ -140,7 +140,7 @@ func (editor *DNSEditor) DeleteSubdomain(domain, subdomain string, recordType st
 	}
 
 	if isValidSubdomain(subdomain) == false {
-		return fmt.Errorf("The domain name is invalid: %q", subdomain)
+		return fmt.Errorf("The subdomain name is invalid: %q", subdomain)
 	}
 
 	if recordType != "AAAA" && recordType != "A" {
@@ -150,7 +150,7 @@ func (editor *DNSEditor) DeleteSubdomain(domain, subdomain string, recordType st
 	// check if the record already exists
 	subdomainRecord, subdomainError := editor.infoProvider.GetSubdomainRecord(domain, subdomain, recordType)
 	if subdomainError != nil {
-		return fmt.Errorf("No address record of type %q found for %q", recordType, subdomain)
+		return fmt.Errorf("No address record of type %q found for %q", recordType, getFormattedDomainName(subdomain, domain))
 	}
 
 	deleteError := editor.client.DestroyRecord(domain, fmt.Sprintf("%d", subdomainRecord.Id))
