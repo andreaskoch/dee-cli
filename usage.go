@@ -39,14 +39,15 @@ func (printer usagePrinter) PrintUsageInformation(output io.Writer) {
 	fmt.Fprintf(output, "Actions:\n")
 
 	for _, action := range printer.actions {
-		fmt.Fprintf(output, "%10s  %s\n", action.Name(), action.Description())
+		fmt.Fprintf(output, "%15s  %s\n", action.Name(), action.Description())
 	}
 
 	fmt.Fprintf(output, "\n")
 
 	// Action details
 	for _, action := range printer.actions {
-		fmt.Fprintf(output, "Action: %s\n", action.Name())
+		fmt.Fprintf(output, "Action: %s\n\n", action.Name())
+		fmt.Fprintf(output, "%s\n\n", action.Description())
 		fmt.Fprintf(output, "%s\n", action.Usage())
 	}
 }

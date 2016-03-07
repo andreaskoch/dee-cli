@@ -13,8 +13,6 @@ import (
 	"os"
 )
 
-const defaultTTL = 600
-
 var (
 	actionNameCreate = "create"
 

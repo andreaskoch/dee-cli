@@ -6,6 +6,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"strings"
 )
@@ -43,4 +44,14 @@ func getFormattedDomainName(subdomain, domain string) string {
 	}
 
 	return fmt.Sprintf("%s.%s", subdomain, domain)
+}
+
+// getDNSRecordTypeByIP returns the DNS record type for the given IP.
+// It will return "A" for an IPv4 address and "AAAA" for an IPv6 address.
+func getDNSRecordTypeByIP(ip net.IP) string {
+	if ip.To4() == nil {
+		return "AAAA"
+	}
+
+	return "A"
 }

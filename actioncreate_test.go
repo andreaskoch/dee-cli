@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func Test_createAction_Name_UpdateIsReturned(t *testing.T) {
+func Test_createAction_Name_CorrectActionNameIsReturned(t *testing.T) {
 
 	// arrange
 	createAction := createAction{}
