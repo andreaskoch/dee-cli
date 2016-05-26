@@ -185,25 +185,25 @@ dee uses the [github.com/andreaskoch/dee-ns](https://github.com/andreaskoch/dee-
 
 ## Installation & Build
 
-Compile the dee binary for your current platform:
+Install dee-cli using `go get`:
 
 ```bash
-git clone git@github.com:andreaskoch/dee-cli.git && cd dee-cli
+go get -u github.com/andreaskoch/dee-cli
+```
 
+Compile dee-cli yourself:
+
+```bash
+go get -u github.com/andreaskoch/dee-cli
+cd $GOPATH/github.com/andreaskoch/dee-cli
 go run make.go -install
 ```
 
 Compile the dee binaries for Linux (64bit, ARM, ARM5, ARM6, ARM7), Mac OS (64bit) and Windows (64bit):
 
 ```bash
+cd $GOPATH/github.com/andreaskoch/dee-cli
 go run make.go -crosscompile
-```
-
-Or you can just use go with `GO15VENDOREXPERIMENT` enabled:
-
-```bash
-export $GO15VENDOREXPERIMENT=1
-go install
 ```
 
 ## Contribute
